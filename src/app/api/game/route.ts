@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { pusher } from '@/lib/pusher';
 import { rateLimit } from '@/lib/rateLimiter';
-import type { GameRoom } from '@/types/game';
 
 export async function POST(req: Request) {
   try {
     // Get IP for rate limiting
-    const forwardedFor = headers().get('x-forwarded-for');
+    const forwardedFor = (await headers()).get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0] : 'localhost';
 
     // Check rate limit (10 requests per second)

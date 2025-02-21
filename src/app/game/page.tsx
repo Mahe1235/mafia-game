@@ -174,7 +174,7 @@ export default function GamePage() {
                         <span className="text-2xl sm:text-3xl font-bold">{playerInfo.role}</span>
                       </div>
                       <p className="text-sm sm:text-base italic text-gray-600 mt-2">
-                        "{RoleDescriptions[playerInfo.role]}"
+                        &quot;{RoleDescriptions[playerInfo.role]}&quot;
                       </p>
                     </div>
                   </div>

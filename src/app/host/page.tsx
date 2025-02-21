@@ -101,7 +101,7 @@ export default function HostPage() {
       }
       unsubscribe();
     };
-  }, [searchParams, router]);
+  }, [room, searchParams, router]);
 
   const handleStartGame = async () => {
     if (!room) return;

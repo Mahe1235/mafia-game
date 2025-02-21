@@ -1,5 +1,4 @@
-import { pusher } from '@/lib/pusher';
-import { pusherClient } from '@/lib/pusher';
+import { pusherClient as pusher } from '@/lib/pusher';
 import type { Player, GameStatus } from '@/types/game';
 
 interface GameRoom {
@@ -21,7 +20,7 @@ interface RoomSubscription {
 
 export const GameStore = {
   subscribeToRoom: (roomCode: string, callbacks: RoomSubscription) => {
-    const channel = pusherClient.subscribe(`game-${roomCode}`);
+    const channel = pusher.subscribe(`game-${roomCode}`);
     
     if (callbacks.onPlayerJoin) channel.bind('player-joined', callbacks.onPlayerJoin);
     if (callbacks.onPlayerLeave) channel.bind('player-left', callbacks.onPlayerLeave);
@@ -31,7 +30,7 @@ export const GameStore = {
 
     return () => {
       channel.unbind_all();
-      pusherClient.unsubscribe(`game-${roomCode}`);
+      pusher.unsubscribe(`game-${roomCode}`);
     };
   },
 
