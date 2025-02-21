@@ -116,6 +116,30 @@ function HostPageContent() {
     }
   };
 
+  const shuffleRoles = async () => {
+    if (!room) return;
+    
+    try {
+      const response = await fetch('/api/game', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roomCode: room.code,
+          event: 'shuffle-roles',
+          data: {}
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to shuffle roles');
+      }
+    } catch (error) {
+      console.error('Error shuffling roles:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <Container>
@@ -181,6 +205,15 @@ function HostPageContent() {
                   disabled={room.players.length < room.minPlayers}
                 >
                   Start Game
+                </Button>
+              )}
+              {room.status === 'started' && (
+                <Button
+                  onClick={shuffleRoles}
+                  className="w-full"
+                  variant="outline"
+                >
+                  Shuffle Roles
                 </Button>
               )}
               <Button

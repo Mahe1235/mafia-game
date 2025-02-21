@@ -114,6 +114,20 @@ export async function POST(req: Request) {
         rooms.delete(roomCode);
         break;
 
+      case 'shuffle-roles':
+        const roomToShuffle = rooms.get(roomCode);
+        if (!roomToShuffle) {
+          return new NextResponse('Room not found', { status: 404 });
+        }
+
+        const shuffledPlayers = assignRoles(roomToShuffle.players);
+        roomToShuffle.players = shuffledPlayers;
+        rooms.set(roomCode, roomToShuffle);
+
+        // Notify all players of new roles
+        await pusher.trigger(`game-${roomCode}`, 'game-started', shuffledPlayers);
+        break;
+
       default:
         return new NextResponse('Invalid event', { status: 400 });
     }
