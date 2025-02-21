@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { gameService } from '@/services/gameService';
-import { rateLimit } from '@/lib/rateLimiter';
 import { pusher } from '@/lib/pusher';
+import { rateLimit } from '@/lib/rateLimiter';
 
 // In-memory storage (will reset on server restart)
 const rooms = new Map();

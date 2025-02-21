@@ -27,11 +27,14 @@ function JoinPageContent() {
     try {
       const response = await fetch(`/api/game?code=${code}`);
       if (!response.ok) {
-        throw new Error('Room not found');
+        setError('Room not found');
+        return;
       }
       const room = await response.json();
       if (room.status !== 'waiting') {
         setError('This game has already started');
+      } else {
+        setError(null);
       }
     } catch (error) {
       setError('Invalid room code');

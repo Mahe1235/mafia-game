@@ -82,7 +82,7 @@ class GameService {
   }
 
   // Notifications
-  private async notifyRoomUpdate(code: string, event: string, data: any): Promise<void> {
+  private async notifyRoomUpdate(code: string, event: string, data: unknown): Promise<void> {
     await pusher.trigger(`game-${code}`, event, data);
   }
 
