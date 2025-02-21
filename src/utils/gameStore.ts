@@ -21,18 +21,28 @@ interface RoomSubscription {
 const STORAGE_PREFIX = 'mafia_game_';
 
 export const GameStore = {
-  subscribeToRoom: (roomCode: string, callbacks: RoomSubscription) => {
-    const channel = pusher.subscribe(`game-${roomCode}`);
-    
-    if (callbacks.onPlayerJoin) channel.bind('player-joined', callbacks.onPlayerJoin);
-    if (callbacks.onPlayerLeave) channel.bind('player-left', callbacks.onPlayerLeave);
-    if (callbacks.onGameStart) channel.bind('game-started', callbacks.onGameStart);
-    if (callbacks.onGameReset) channel.bind('game-reset', callbacks.onGameReset);
-    if (callbacks.onGameEnded) channel.bind('game-ended', callbacks.onGameEnded);
+  subscribeToRoom: (code: string, callbacks: {
+    onPlayerJoined?: (player: Player) => void;
+    onGameStarted?: (players: Player[]) => void;
+    onGameEnded?: (data: { reason: string }) => void;
+  }) => {
+    const channel = pusherClient.subscribe(`game-${code}`);
+
+    channel.bind('player-joined', (player: Player) => {
+      callbacks.onPlayerJoined?.(player);
+    });
+
+    channel.bind('game-started', (players: Player[]) => {
+      callbacks.onGameStarted?.(players);
+    });
+
+    channel.bind('game-ended', (data: { reason: string }) => {
+      callbacks.onGameEnded?.(data);
+    });
 
     return () => {
       channel.unbind_all();
-      pusher.unsubscribe(`game-${roomCode}`);
+      pusherClient.unsubscribe(`game-${code}`);
     };
   },
 
