@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { pusher } from '@/lib/pusher';
 import { rateLimit } from '@/lib/rateLimiter';
+import type { PlayerRole } from '@/types/game';
 
 // In-memory storage (will reset on server restart)
 const rooms = new Map();
@@ -9,6 +10,38 @@ const rooms = new Map();
 // Game constants
 const MIN_PLAYERS = 6;
 const MAX_PLAYERS = 15;
+
+// Helper function to assign roles
+function assignRoles(players: any[]) {
+  const roles: PlayerRole[] = [];
+  
+  // Add roles based on player count
+  roles.push('mafia');  // At least 1 mafia
+  roles.push('detective');  // 1 detective
+  roles.push('doctor');  // 1 doctor
+  
+  // Fill rest with civilians
+  while (roles.length < players.length) {
+    if (roles.length < players.length * 0.3) { // Up to 30% can be mafia
+      roles.push('mafia');
+    } else {
+      roles.push('civilian');
+    }
+  }
+
+  // Shuffle roles
+  for (let i = roles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [roles[i], roles[j]] = [roles[j], roles[i]];
+  }
+
+  // Assign roles to players
+  return players.map((player, index) => ({
+    ...player,
+    role: roles[index],
+    isAlive: true
+  }));
+}
 
 export async function POST(req: Request) {
   try {
@@ -66,11 +99,14 @@ export async function POST(req: Request) {
           return new NextResponse(`Need at least ${MIN_PLAYERS} players to start`, { status: 400 });
         }
 
+        // Assign roles to players
+        const playersWithRoles = assignRoles(startingRoom.players);
+        startingRoom.players = playersWithRoles;
         startingRoom.status = 'started';
         rooms.set(roomCode, startingRoom);
 
-        // Notify others via Pusher
-        await pusher.trigger(`game-${roomCode}`, 'game-started', startingRoom.players);
+        // Notify all players with their roles
+        await pusher.trigger(`game-${roomCode}`, 'game-started', playersWithRoles);
         break;
 
       case 'game-ended':

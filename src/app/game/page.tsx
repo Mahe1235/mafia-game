@@ -162,33 +162,37 @@ function GamePageContent() {
               </>
             ) : (
               <div className="space-y-4">
-                <div className="text-center p-4 bg-blue-50 rounded-md">
-                  <h2 className="text-lg font-semibold text-blue-900">
-                    Your Role: {player.role}
-                  </h2>
-                  <p className="text-sm text-blue-700 mt-1">
-                    {getRoleDescription(player.role)}
-                  </p>
-                </div>
+                {room.status === 'started' && (
+                  <div className="space-y-4">
+                    <div className="text-center p-4 bg-blue-50 rounded-md">
+                      <h2 className="text-lg font-semibold text-blue-900">
+                        Your Role: {player.role ? player.role.charAt(0).toUpperCase() + player.role.slice(1) : 'Unassigned'}
+                      </h2>
+                      <p className="text-sm text-blue-700 mt-1">
+                        {getRoleDescription(player.role)}
+                      </p>
+                    </div>
 
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">Players</h2>
-                  <div className="space-y-2">
-                    {room.players.map(p => (
-                      <div 
-                        key={p.id} 
-                        className={`p-2 rounded-md ${
-                          p.id === player.id 
-                            ? 'bg-blue-50 border border-blue-200' 
-                            : 'bg-gray-50'
-                        }`}
-                      >
-                        {p.name} {p.id === player.id && '(You)'}
-                        {p.isAlive === false && ' (Dead)'}
+                    <div>
+                      <h2 className="text-xl font-semibold mb-2">Players</h2>
+                      <div className="space-y-2">
+                        {room.players.map(p => (
+                          <div 
+                            key={p.id} 
+                            className={`p-2 rounded-md ${
+                              p.id === player.id 
+                                ? 'bg-blue-50 border border-blue-200' 
+                                : 'bg-gray-50'
+                            }`}
+                          >
+                            {p.name} {p.id === player.id && '(You)'}
+                            {!p.isAlive && ' (Dead)'}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -201,13 +205,13 @@ function GamePageContent() {
 function getRoleDescription(role?: string): string {
   switch (role) {
     case 'mafia':
-      return 'Eliminate other players without getting caught';
+      return 'You are part of the Mafia team. Eliminate other players without getting caught!';
     case 'detective':
-      return 'Investigate one player each night to discover their role';
+      return 'You are the Detective. Each night, you can investigate one player to learn their role.';
     case 'doctor':
-      return 'Save one player each night from elimination';
+      return 'You are the Doctor. Each night, you can protect one player from elimination.';
     case 'civilian':
-      return 'Work with others to identify and eliminate the mafia';
+      return 'You are a Civilian. Work with others to identify and eliminate the Mafia!';
     default:
       return 'Waiting for role assignment...';
   }
