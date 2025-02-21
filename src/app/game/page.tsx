@@ -27,7 +27,7 @@ function GamePageContent() {
 
   useEffect(() => {
     const code = searchParams.get('code');
-    const storedInfo = localStorage.getItem('playerInfo');
+    const storedInfo = localStorage.getItem('mafia_game_playerInfo');
     
     if (!code || !storedInfo) {
       router.push('/');
@@ -42,14 +42,14 @@ function GamePageContent() {
 
     // Validate and reconnect player
     if (!GameStore.validateSession(code, parsedInfo.id)) {
-      localStorage.removeItem('playerInfo');
+      localStorage.removeItem('mafia_game_playerInfo');
       router.push('/?error=session-expired');
       return;
     }
 
     const reconnectedPlayer = GameStore.reconnectPlayer(code, parsedInfo.id);
     if (!reconnectedPlayer) {
-      localStorage.removeItem('playerInfo');
+      localStorage.removeItem('mafia_game_playerInfo');
       router.push('/?error=connection-lost');
       return;
     }
@@ -57,11 +57,11 @@ function GamePageContent() {
     // Update player info with any changes (like role) from reconnection
     const updatedInfo = { ...parsedInfo, ...reconnectedPlayer };
     setPlayerInfo(updatedInfo);
-    localStorage.setItem('playerInfo', JSON.stringify(updatedInfo));
+    localStorage.setItem('mafia_game_playerInfo', JSON.stringify(updatedInfo));
 
     const gameRoom = GameStore.getRoom(code);
     if (!gameRoom) {
-      localStorage.removeItem('playerInfo');
+      localStorage.removeItem('mafia_game_playerInfo');
       router.push('/');
       return;
     }
@@ -93,7 +93,7 @@ function GamePageContent() {
         if (updatedPlayer?.role) {
           const updatedInfo = { ...parsedInfo, role: updatedPlayer.role };
           setPlayerInfo(updatedInfo);
-          localStorage.setItem('playerInfo', JSON.stringify(updatedInfo));
+          localStorage.setItem('mafia_game_playerInfo', JSON.stringify(updatedInfo));
         }
         
         setRoom(currentRoom => {
@@ -109,7 +109,7 @@ function GamePageContent() {
         const updatedInfo = { ...parsedInfo };
         delete updatedInfo.role;
         setPlayerInfo(updatedInfo);
-        localStorage.setItem('playerInfo', JSON.stringify(updatedInfo));
+        localStorage.setItem('mafia_game_playerInfo', JSON.stringify(updatedInfo));
         
         setRoom(currentRoom => {
           if (!currentRoom) return null;
@@ -122,7 +122,7 @@ function GamePageContent() {
       },
       onGameEnded: ({ reason }) => {
         if (reason === 'host-left') {
-          localStorage.removeItem('playerInfo');
+          localStorage.removeItem('mafia_game_playerInfo');
           router.push('/?error=host-left');
         }
       }
@@ -136,7 +136,7 @@ function GamePageContent() {
   const handleLeaveGame = async () => {
     if (playerInfo) {
       await GameStore.leaveRoom(playerInfo.roomCode, playerInfo.id);
-      localStorage.removeItem('playerInfo');
+      localStorage.removeItem('mafia_game_playerInfo');
     }
     router.push('/');
   };

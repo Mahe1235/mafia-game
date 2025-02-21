@@ -1,4 +1,4 @@
-import { pusherClient as pusher } from '@/lib/pusher';
+import { pusherClient } from '@/lib/pusher';
 import type { Player, GameStatus } from '@/types/game';
 
 interface GameRoom {
@@ -18,6 +18,8 @@ interface RoomSubscription {
   onGameEnded?: (data: { reason: GameEndReason }) => void;
 }
 
+const STORAGE_PREFIX = 'mafia_game_';
+
 export const GameStore = {
   subscribeToRoom: (roomCode: string, callbacks: RoomSubscription) => {
     const channel = pusher.subscribe(`game-${roomCode}`);
@@ -35,14 +37,18 @@ export const GameStore = {
   },
 
   createRoom: async (hostName: string): Promise<GameRoom> => {
-    const code = Math.random().toString(36).substr(2, 6).toUpperCase();
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     const room: GameRoom = {
       code,
       hostName,
       players: [],
       status: 'waiting'
     };
-    localStorage.setItem(`room_${code}`, JSON.stringify(room));
+
+    // Store with prefix
+    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
+    localStorage.setItem(`${STORAGE_PREFIX}hostRoom`, code);
+
     return room;
   },
 
@@ -63,12 +69,19 @@ export const GameStore = {
     if (room.players.some(p => p.name === playerName)) return null;
 
     const newPlayer: Player = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 15),
       name: playerName
     };
 
     room.players.push(newPlayer);
-    localStorage.setItem(`room_${code}`, JSON.stringify(room));
+    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
+
+    // Store player info
+    localStorage.setItem(`${STORAGE_PREFIX}playerInfo`, JSON.stringify({
+      id: newPlayer.id,
+      name: playerName,
+      roomCode: code
+    }));
 
     try {
       const response = await fetch('/api/game', {
@@ -96,7 +109,7 @@ export const GameStore = {
 
     room.players = players;
     room.status = 'in-progress';
-    localStorage.setItem(`room_${code}`, JSON.stringify(room));
+    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
 
     try {
       const response = await fetch('/api/game', {
@@ -122,7 +135,7 @@ export const GameStore = {
 
     room.status = 'waiting';
     room.players = room.players.map(({ id, name }) => ({ id, name }));
-    localStorage.setItem(`room_${code}`, JSON.stringify(room));
+    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
 
     // Notify all players about game reset
     await fetch('/api/game', {
@@ -137,8 +150,9 @@ export const GameStore = {
   },
 
   getRoom: (code: string): GameRoom | null => {
-    const roomData = localStorage.getItem(`room_${code}`);
-    return roomData ? JSON.parse(roomData) : null;
+    const roomData = localStorage.getItem(`${STORAGE_PREFIX}room_${code}`);
+    if (!roomData) return null;
+    return JSON.parse(roomData);
   },
 
   leaveRoom: async (code: string, playerId: string) => {
@@ -147,9 +161,9 @@ export const GameStore = {
 
     room.players = room.players.filter(p => p.id !== playerId);
     if (room.players.length === 0) {
-      localStorage.removeItem(`room_${code}`);
+      localStorage.removeItem(`${STORAGE_PREFIX}room_${code}`);
     } else {
-      localStorage.setItem(`room_${code}`, JSON.stringify(room));
+      localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
     }
 
     // Notify others about player leaving
@@ -165,10 +179,11 @@ export const GameStore = {
   },
 
   cleanupRoom: async (code: string) => {
-    // Remove from localStorage
-    localStorage.removeItem(`room_${code}`);
+    // Remove with prefix
+    localStorage.removeItem(`${STORAGE_PREFIX}room_${code}`);
+    localStorage.removeItem(`${STORAGE_PREFIX}hostRoom`);
+    localStorage.removeItem(`${STORAGE_PREFIX}playerInfo`);
 
-    // Notify all players that game is ended
     await fetch('/api/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -186,11 +201,16 @@ export const GameStore = {
 
     // For host validation
     if (!playerId) {
-      return true; // Room exists, valid for host
+      const storedHostRoom = localStorage.getItem(`${STORAGE_PREFIX}hostRoom`);
+      return storedHostRoom === code;
     }
 
     // For player validation
-    return room.players.some(p => p.id === playerId);
+    const playerInfo = localStorage.getItem(`${STORAGE_PREFIX}playerInfo`);
+    if (!playerInfo) return false;
+
+    const parsedInfo = JSON.parse(playerInfo);
+    return parsedInfo.roomCode === code && parsedInfo.id === playerId;
   },
 
   reconnectPlayer: (code: string, playerId: string): Player | null => {

@@ -21,7 +21,7 @@ function HostPageContent() {
 
   useEffect(() => {
     const code = searchParams.get('code');
-    const storedCode = localStorage.getItem('hostRoom');
+    const storedCode = localStorage.getItem('mafia_game_hostRoom');
     
     if (!code || code !== storedCode) {
       router.push('/');
@@ -30,7 +30,7 @@ function HostPageContent() {
 
     // Validate host session
     if (!GameStore.validateSession(code)) {
-      localStorage.removeItem('hostRoom');
+      localStorage.removeItem('mafia_game_hostRoom');
       router.push('/?error=session-expired');
       return;
     }
@@ -147,7 +147,7 @@ function HostPageContent() {
   const handleExitGame = async () => {
     if (room) {
       await GameStore.cleanupRoom(room.code);
-      localStorage.removeItem('hostRoom');
+      localStorage.removeItem('mafia_game_hostRoom');
       router.push('/');
     }
   };
