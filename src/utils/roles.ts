@@ -1,20 +1,25 @@
-export const RoleIcons = {
-  Mafia: '🔪',
-  Detective: '🔍',
-  Doctor: '💉',
-  Villager: '👥',
+import type { PlayerRole } from '@/types/game';
+
+export const RoleIcons: Record<PlayerRole, string> = {
+  unassigned: '❓',
+  mafia: '🔪',
+  detective: '🔍',
+  doctor: '💉',
+  civilian: '👥'
 };
 
-export const RoleColors = {
-  Mafia: 'text-red-600',
-  Detective: 'text-blue-600',
-  Doctor: 'text-green-600',
-  Villager: 'text-gray-600',
+export const RoleColors: Record<PlayerRole, string> = {
+  unassigned: 'text-gray-500',
+  mafia: 'text-red-500',
+  detective: 'text-blue-500',
+  doctor: 'text-green-500',
+  civilian: 'text-yellow-500'
 };
 
-export const RoleDescriptions = {
-  Mafia: "Keep that poker face on! You're the reason everyone's paranoid.",
-  Detective: "Sherlock who? You're the real detective in town.",
-  Doctor: "Heroes wear scrubs. Save a villager, be their guardian angel!",
-  Villager: "Just an innocent villager... or so everyone thinks! 😉",
+export const RoleDescriptions: Record<PlayerRole, string> = {
+  unassigned: 'Waiting for role...',
+  mafia: 'Eliminate other players without getting caught',
+  detective: 'Investigate players to find the mafia',
+  doctor: 'Protect players from elimination',
+  civilian: 'Work with others to identify the mafia'
 }; 

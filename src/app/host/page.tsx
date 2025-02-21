@@ -2,14 +2,14 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { GameStore } from '@/utils/gameStore';
 import { Container } from '@/components/ui/container';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { Player } from '@/types/game';
+import { pusherClient } from '@/lib/pusher';
+import type { GameRoom, Player } from '@/types/game';
 
 function HostPageContent() {
-  const [room, setRoom] = useState<{ code: string; players: Player[] } | null>(null);
+  const [room, setRoom] = useState<GameRoom | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -21,51 +21,75 @@ function HostPageContent() {
       return;
     }
 
-    const isValidHost = GameStore.validateSession(code);
-    if (!isValidHost) {
-      router.replace('/?error=session-expired');
-      return;
-    }
+    // Initial room fetch
+    const fetchRoom = async () => {
+      try {
+        const response = await fetch(`/api/game?code=${code}`);
+        if (!response.ok) {
+          throw new Error('Room not found');
+        }
+        const roomData = await response.json();
+        setRoom(roomData);
+      } catch (error) {
+        console.error('Error fetching room:', error);
+        router.replace('/?error=room-not-found');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const currentRoom = GameStore.getRoom(code);
-    if (!currentRoom) {
-      router.replace('/?error=room-not-found');
-      return;
-    }
+    fetchRoom();
 
-    setRoom(currentRoom);
-    setIsLoading(false);
-
-    const cleanup = GameStore.subscribeToRoom(code, {
-      onPlayerJoined: (player) => {
-        setRoom(prev => prev ? {
+    // Subscribe to room updates
+    const channel = pusherClient.subscribe(`game-${code}`);
+    
+    channel.bind('player-joined', (player: Player) => {
+      setRoom(prev => {
+        if (!prev) return prev;
+        return {
           ...prev,
           players: [...prev.players, player]
-        } : null);
-      }
+        };
+      });
+    });
+
+    channel.bind('game-started', (players: Player[]) => {
+      setRoom(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: 'started',
+          players
+        };
+      });
     });
 
     return () => {
-      cleanup();
+      channel.unbind_all();
+      pusherClient.unsubscribe(`game-${code}`);
     };
   }, [code, router]);
 
   const handleStartGame = async () => {
-    if (!room || room.players.length < 2) {
-      alert('Need at least 2 players to start');
+    if (!room || room.players.length < 4) {
+      alert('Need at least 4 players to start');
       return;
     }
 
     try {
-      await fetch('/api/game', {
+      const response = await fetch('/api/game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomCode: room.code,
+          roomCode: code,
           event: 'game-started',
-          data: room.players
+          data: null
         })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to start game');
+      }
     } catch (error) {
       console.error('Start game error:', error);
       alert('Failed to start game');
@@ -74,16 +98,45 @@ function HostPageContent() {
 
   const handleEndGame = async () => {
     if (!room) return;
-    await GameStore.cleanupRoom(room.code);
-    router.replace('/');
+
+    try {
+      await fetch('/api/game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode: code,
+          event: 'game-ended',
+          data: { reason: 'host-ended' }
+        })
+      });
+      router.replace('/');
+    } catch (error) {
+      console.error('End game error:', error);
+      alert('Failed to end game');
+    }
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Container>
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </Container>
+    );
   }
 
   if (!room) {
-    return <div>Room not found</div>;
+    return (
+      <Container>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">Room not found</h1>
+          <Button onClick={() => router.push('/')} className="mt-4">
+            Back to Home
+          </Button>
+        </div>
+      </Container>
+    );
   }
 
   return (
@@ -97,7 +150,7 @@ function HostPageContent() {
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-semibold mb-2">Players ({room.players.length})</h2>
+              <h2 className="text-xl font-semibold mb-2">Players</h2>
               <div className="space-y-2">
                 {room.players.map(player => (
                   <div key={player.id} className="p-2 bg-gray-50 rounded">
@@ -105,16 +158,23 @@ function HostPageContent() {
                   </div>
                 ))}
               </div>
+              {room.players.length < room.minPlayers && (
+                <p className="text-sm text-amber-600 mt-2">
+                  Need at least 6 players to start
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Button
-                onClick={handleStartGame}
-                className="w-full"
-                disabled={room.players.length < 2}
-              >
-                Start Game
-              </Button>
+              {room.status === 'waiting' && (
+                <Button
+                  onClick={handleStartGame}
+                  className="w-full"
+                  disabled={room.players.length < room.minPlayers}
+                >
+                  Start Game
+                </Button>
+              )}
               <Button
                 onClick={handleEndGame}
                 variant="outline"

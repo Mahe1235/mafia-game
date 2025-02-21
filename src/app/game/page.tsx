@@ -5,226 +5,212 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
-import { GameStore } from '@/utils/gameStore';
-import { RoleIcons, RoleColors, RoleDescriptions } from '@/utils/roles';
-import type { Role, Player, GameStatus } from '@/types/game';
+import { pusherClient } from '@/lib/pusher';
+import type { GameRoom, Player, PlayerSession } from '@/types/game';
 
 function GamePageContent() {
+  const [room, setRoom] = useState<GameRoom | null>(null);
+  const [player, setPlayer] = useState<PlayerSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [playerInfo, setPlayerInfo] = useState<{
-    id: string;
-    name: string;
-    roomCode: string;
-    role?: Role;
-  } | null>(null);
-  const [room, setRoom] = useState<{
-    code: string;
-    hostName: string;
-    players: Player[];
-    status: GameStatus;
-  } | null>(null);
+  const code = searchParams.get('code')?.toUpperCase();
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const storedInfo = localStorage.getItem('mafia_game_playerInfo');
+    if (!code) {
+      router.replace('/?error=invalid-code');
+      return;
+    }
+
+    // Load player session
+    const sessionData = sessionStorage.getItem('playerSession');
+    if (!sessionData) {
+      router.replace('/?error=session-expired');
+      return;
+    }
+
+    const playerSession: PlayerSession = JSON.parse(sessionData);
+    if (playerSession.roomCode !== code) {
+      router.replace('/?error=invalid-session');
+      return;
+    }
+
+    setPlayer(playerSession);
+
+    // Fetch initial room state
+    const fetchRoom = async () => {
+      try {
+        const response = await fetch(`/api/game?code=${code}`);
+        if (!response.ok) {
+          throw new Error('Room not found');
+        }
+        const roomData = await response.json();
+        setRoom(roomData);
+      } catch (error) {
+        console.error('Error fetching room:', error);
+        setError('Failed to load game');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRoom();
+
+    // Subscribe to game updates
+    const channel = pusherClient.subscribe(`game-${code}`);
     
-    if (!code || !storedInfo) {
-      router.push('/');
-      return;
-    }
+    channel.bind('player-joined', (newPlayer: Player) => {
+      setRoom(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          players: [...prev.players, newPlayer]
+        };
+      });
+    });
 
-    const parsedInfo = JSON.parse(storedInfo);
-    if (parsedInfo.roomCode !== code) {
-      router.push('/');
-      return;
-    }
-
-    // Validate and reconnect player
-    if (!GameStore.validateSession(code, parsedInfo.id)) {
-      localStorage.removeItem('mafia_game_playerInfo');
-      router.push('/?error=session-expired');
-      return;
-    }
-
-    const reconnectedPlayer = GameStore.reconnectPlayer(code, parsedInfo.id);
-    if (!reconnectedPlayer) {
-      localStorage.removeItem('mafia_game_playerInfo');
-      router.push('/?error=connection-lost');
-      return;
-    }
-
-    // Update player info with any changes (like role) from reconnection
-    const updatedInfo = { ...parsedInfo, ...reconnectedPlayer };
-    setPlayerInfo(updatedInfo);
-    localStorage.setItem('mafia_game_playerInfo', JSON.stringify(updatedInfo));
-
-    const gameRoom = GameStore.getRoom(code);
-    if (!gameRoom) {
-      localStorage.removeItem('mafia_game_playerInfo');
-      router.push('/');
-      return;
-    }
-
-    setRoom(gameRoom);
-
-    // Subscribe to real-time updates
-    const unsubscribe = GameStore.subscribeToRoom(code, {
-      onPlayerJoined: (player: Player) => {
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            players: [...currentRoom.players, player]
-          };
-        });
-      },
-      onPlayerLeft: (playerId: string) => {
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            players: currentRoom.players.filter(p => p.id !== playerId)
-          };
-        });
-      },
-      onGameStarted: (players: Player[]) => {
-        const updatedPlayer = players.find((p: Player) => p.id === parsedInfo.id);
-        if (updatedPlayer?.role) {
-          const updatedInfo = { ...parsedInfo, role: updatedPlayer.role };
-          setPlayerInfo(updatedInfo);
-          localStorage.setItem('mafia_game_playerInfo', JSON.stringify(updatedInfo));
-        }
-        
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            players,
-            status: 'in-progress'
-          };
-        });
-      },
-      onGameReset: () => {
-        const updatedInfo = { ...parsedInfo };
-        delete updatedInfo.role;
-        setPlayerInfo(updatedInfo);
-        localStorage.setItem('mafia_game_playerInfo', JSON.stringify(updatedInfo));
-        
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            status: 'waiting',
-            players: currentRoom.players.map(({ id, name }) => ({ id, name }))
-          };
-        });
-      },
-      onGameEnded: ({ reason }) => {
-        if (reason === 'host-left') {
-          localStorage.removeItem('mafia_game_playerInfo');
-          router.push('/?error=host-left');
-        }
+    channel.bind('game-started', (players: Player[]) => {
+      setRoom(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: 'started',
+          players
+        };
+      });
+      
+      // Update player's role
+      const updatedPlayer = players.find(p => p.id === playerSession.id);
+      if (updatedPlayer) {
+        playerSession.role = updatedPlayer.role;
+        sessionStorage.setItem('playerSession', JSON.stringify(playerSession));
+        setPlayer(playerSession);
       }
     });
 
+    channel.bind('game-ended', (data: { reason: string }) => {
+      sessionStorage.removeItem('playerSession');
+      router.replace(`/?error=${data.reason}`);
+    });
+
     return () => {
-      unsubscribe();
+      channel.unbind_all();
+      pusherClient.unsubscribe(`game-${code}`);
     };
-  }, [searchParams, router]);
+  }, [code, router]);
 
-  const handleLeaveGame = async () => {
-    if (playerInfo) {
-      await GameStore.leaveRoom(playerInfo.roomCode, playerInfo.id);
-      localStorage.removeItem('mafia_game_playerInfo');
-    }
-    router.push('/');
-  };
+  if (isLoading) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="text-lg">Loading game...</div>
+        </div>
+      </Container>
+    );
+  }
 
-  if (!playerInfo || !room) {
-    return <div>Loading...</div>;
+  if (error || !room || !player) {
+    return (
+      <Container>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">
+            {error || 'Game not found'}
+          </h1>
+          <Button onClick={() => router.push('/')} className="mt-4">
+            Back to Home
+          </Button>
+        </div>
+      </Container>
+    );
   }
 
   return (
     <Container>
       <div className="text-center space-y-2 sm:space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Mafia Game</h1>
-        <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 bg-white rounded-full shadow-sm">
-          <p className="text-base sm:text-lg font-mono tracking-widest text-gray-900">
-            Room: {playerInfo.roomCode}
-          </p>
-        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          {room.status === 'waiting' ? 'Waiting Room' : 'Game Room'}
+        </h1>
+        <p className="text-gray-600">Room Code: {room.code}</p>
       </div>
 
-      <Card className="shadow-lg">
+      <Card className="shadow-lg mt-6">
         <CardContent className="p-4 sm:p-6">
-          <div className="space-y-4 sm:space-y-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold text-center text-lg sm:text-xl mb-2 text-gray-900">
-                Welcome, {playerInfo.name}!
-              </h3>
-              
-              {playerInfo.role ? (
-                <div className="space-y-4">
-                  <div className="p-4 sm:p-6 bg-white rounded-lg shadow-inner text-center">
-                    <p className="text-base sm:text-lg font-medium text-gray-600 mb-3">Your Role:</p>
-                    <div className={`space-y-2 ${RoleColors[playerInfo.role]}`}>
-                      <div className="flex items-center justify-center gap-3">
-                        <span className="text-3xl sm:text-4xl">{RoleIcons[playerInfo.role]}</span>
-                        <span className="text-2xl sm:text-3xl font-bold">{playerInfo.role}</span>
+          <div className="space-y-4">
+            {room.status === 'waiting' ? (
+              <>
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Players</h2>
+                  <div className="space-y-2">
+                    {room.players.map(p => (
+                      <div 
+                        key={p.id} 
+                        className={`p-2 rounded-md ${
+                          p.id === player.id 
+                            ? 'bg-blue-50 border border-blue-200' 
+                            : 'bg-gray-50'
+                        }`}
+                      >
+                        {p.name} {p.id === player.id && '(You)'}
                       </div>
-                      <p className="text-sm sm:text-base italic text-gray-600 mt-2">
-                        &quot;{RoleDescriptions[playerInfo.role]}&quot;
-                      </p>
-                    </div>
+                    ))}
                   </div>
-                  <p className="text-sm text-center text-gray-600 font-medium">
-                    Keep your role secret from other players!
+                </div>
+                <p className="text-sm text-gray-500 text-center">
+                  Waiting for the host to start the game...
+                </p>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-center p-4 bg-blue-50 rounded-md">
+                  <h2 className="text-lg font-semibold text-blue-900">
+                    Your Role: {player.role}
+                  </h2>
+                  <p className="text-sm text-blue-700 mt-1">
+                    {getRoleDescription(player.role)}
                   </p>
                 </div>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-gray-600 animate-pulse">
-                    Waiting for host to start the game...
-                  </p>
-                </div>
-              )}
-            </div>
 
-            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900">Players</h3>
-                <span className="px-2.5 py-1 bg-white rounded-full text-sm font-medium text-gray-600 shadow-sm">
-                  {room.players.length} joined
-                </span>
-              </div>
-              <div className="space-y-2">
-                {room.players.map((player) => (
-                  <div 
-                    key={player.id}
-                    className={`flex items-center justify-between p-2.5 bg-white rounded-lg shadow-sm
-                              ${player.id === playerInfo.id ? 'ring-2 ring-blue-500' : ''}`}
-                  >
-                    <span className="font-medium text-gray-900">
-                      {player.name} {player.id === playerInfo.id && '(You)'}
-                    </span>
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Players</h2>
+                  <div className="space-y-2">
+                    {room.players.map(p => (
+                      <div 
+                        key={p.id} 
+                        className={`p-2 rounded-md ${
+                          p.id === player.id 
+                            ? 'bg-blue-50 border border-blue-200' 
+                            : 'bg-gray-50'
+                        }`}
+                      >
+                        {p.name} {p.id === player.id && '(You)'}
+                        {p.isAlive === false && ' (Dead)'}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-
-            <Button 
-              onClick={handleLeaveGame}
-              variant="outline" 
-              className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
-            >
-              Leave Game
-            </Button>
+            )}
           </div>
         </CardContent>
       </Card>
     </Container>
   );
+}
+
+function getRoleDescription(role?: string): string {
+  switch (role) {
+    case 'mafia':
+      return 'Eliminate other players without getting caught';
+    case 'detective':
+      return 'Investigate one player each night to discover their role';
+    case 'doctor':
+      return 'Save one player each night from elimination';
+    case 'civilian':
+      return 'Work with others to identify and eliminate the mafia';
+    default:
+      return 'Waiting for role assignment...';
+  }
 }
 
 export default function GamePage() {

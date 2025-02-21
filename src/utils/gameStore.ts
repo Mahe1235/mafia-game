@@ -8,6 +8,8 @@ interface GameRoom {
   status: GameStatus;
 }
 
+const STORAGE_PREFIX = 'mafia_game_';
+
 interface RoomSubscription {
   onPlayerJoined?: (player: Player) => void;
   onPlayerLeft?: (playerId: string) => void;
@@ -15,8 +17,6 @@ interface RoomSubscription {
   onGameReset?: () => void;
   onGameEnded?: (data: { reason: string }) => void;
 }
-
-const STORAGE_PREFIX = 'mafia_game_';
 
 export const GameStore = {
   subscribeToRoom: (code: string, callbacks: RoomSubscription) => {
@@ -46,31 +46,49 @@ export const GameStore = {
       status: 'waiting'
     };
 
-    // Store room data
-    const roomKey = `${STORAGE_PREFIX}room_${code}`;
-    localStorage.setItem(roomKey, JSON.stringify(room));
-    localStorage.setItem(`${STORAGE_PREFIX}hostRoom`, code);
+    // Create room via API
+    const response = await fetch('/api/game', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomCode: code,
+        event: 'room-created',
+        data: room
+      })
+    });
 
+    if (!response.ok) {
+      throw new Error('Failed to create room');
+    }
+
+    // Store host session
+    localStorage.setItem(`${STORAGE_PREFIX}hostRoom`, code);
     console.log('Room created:', room);
-    console.log('Storage keys:', Object.keys(localStorage));
     return room;
   },
 
-  getRoom: (code: string): GameRoom | null => {
-    const roomKey = `${STORAGE_PREFIX}room_${code}`;
+  getRoom: async (code: string): Promise<GameRoom | null> => {
     console.log('Getting room:', code);
-    console.log('Storage keys:', Object.keys(localStorage));
     
-    const roomData = localStorage.getItem(roomKey);
-    console.log('Room data found:', roomData);
-    
-    if (!roomData) return null;
-    return JSON.parse(roomData);
+    try {
+      const response = await fetch(`/api/game?code=${code}`);
+      if (!response.ok) {
+        console.log('Room not found via API');
+        return null;
+      }
+      
+      const room = await response.json();
+      console.log('Room data found:', room);
+      return room;
+    } catch (error) {
+      console.error('Error getting room:', error);
+      return null;
+    }
   },
 
-  validateSession: (code: string, playerId?: string): boolean => {
+  validateSession: async (code: string, playerId?: string): Promise<boolean> => {
     console.log('Validating session:', { code, playerId });
-    const room = GameStore.getRoom(code);
+    const room = await GameStore.getRoom(code);
     
     if (!room) {
       console.log('Room not found during validation');
@@ -96,7 +114,7 @@ export const GameStore = {
     console.log('Joining room:', { code, playerName });
     
     try {
-      const room = GameStore.getRoom(code);
+      const room = await GameStore.getRoom(code);
       console.log('Found room:', room);
       
       if (!room) {
@@ -107,9 +125,10 @@ export const GameStore = {
       const newPlayer: Player = {
         id: Math.random().toString(36).substring(2, 15),
         name: playerName
+        // role will be assigned when game starts
       };
 
-      // Store player info
+      // Store player info locally
       const playerInfo = {
         id: newPlayer.id,
         name: playerName,
@@ -118,12 +137,7 @@ export const GameStore = {
       localStorage.setItem(`${STORAGE_PREFIX}playerInfo`, JSON.stringify(playerInfo));
       console.log('Stored player info:', playerInfo);
 
-      // Update room
-      room.players.push(newPlayer);
-      localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
-      console.log('Updated room:', room);
-
-      // Notify others
+      // Join room via API
       const response = await fetch('/api/game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,7 +149,7 @@ export const GameStore = {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to notify other players');
+        throw new Error('Failed to join room');
       }
 
       console.log('Successfully joined room');
@@ -148,10 +162,7 @@ export const GameStore = {
 
   cleanupRoom: async (code: string) => {
     console.log('Cleaning up room:', code);
-    localStorage.removeItem(`${STORAGE_PREFIX}room_${code}`);
-    localStorage.removeItem(`${STORAGE_PREFIX}hostRoom`);
-    localStorage.removeItem(`${STORAGE_PREFIX}playerInfo`);
-
+    
     await fetch('/api/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -161,16 +172,18 @@ export const GameStore = {
         data: { reason: 'host-left' }
       })
     });
+
+    localStorage.removeItem(`${STORAGE_PREFIX}hostRoom`);
+    localStorage.removeItem(`${STORAGE_PREFIX}playerInfo`);
     console.log('Room cleaned up');
   },
 
   startGame: async (code: string, players: Player[]) => {
-    const room = GameStore.getRoom(code);
+    const room = await GameStore.getRoom(code);
     if (!room) return;
 
-    room.status = 'in-progress';
+    room.status = 'started';
     room.players = players;
-    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
 
     await fetch('/api/game', {
       method: 'POST',
@@ -184,12 +197,11 @@ export const GameStore = {
   },
 
   resetGame: async (code: string) => {
-    const room = GameStore.getRoom(code);
+    const room = await GameStore.getRoom(code);
     if (!room) return;
 
     room.status = 'waiting';
     room.players = room.players.map(({ id, name }) => ({ id, name }));
-    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
 
     await fetch('/api/game', {
       method: 'POST',
@@ -202,11 +214,10 @@ export const GameStore = {
   },
 
   leaveRoom: async (code: string, playerId: string) => {
-    const room = GameStore.getRoom(code);
+    const room = await GameStore.getRoom(code);
     if (!room) return;
 
     room.players = room.players.filter(p => p.id !== playerId);
-    localStorage.setItem(`${STORAGE_PREFIX}room_${code}`, JSON.stringify(room));
 
     await fetch('/api/game', {
       method: 'POST',
@@ -219,8 +230,8 @@ export const GameStore = {
     });
   },
 
-  reconnectPlayer: (code: string, playerId: string): Player | null => {
-    const room = GameStore.getRoom(code);
+  reconnectPlayer: async (code: string, playerId: string): Promise<Player | null> => {
+    const room = await GameStore.getRoom(code);
     if (!room) return null;
     return room.players.find(p => p.id === playerId) || null;
   }

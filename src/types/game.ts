@@ -1,25 +1,39 @@
 import React from 'react';
 
-export type Role = 'Mafia' | 'Detective' | 'Doctor' | 'Villager';
-export type GameStatus = 'waiting' | 'in-progress';
+export type GameStatus = 'waiting' | 'started' | 'ended';
+export type PlayerRole = 'unassigned' | 'mafia' | 'detective' | 'doctor' | 'civilian';
 
 export interface Player {
   id: string;
   name: string;
-  role?: Role;
+  role?: PlayerRole;
+  isAlive?: boolean;
 }
 
 export interface GameRoom {
-  id: string;
   code: string;
-  status: GameStatus;
+  hostName: string;
   players: Player[];
+  status: GameStatus;
+  minPlayers: number;
   maxPlayers: number;
-  hostId: string;
+  roles?: {
+    mafia: number;
+    detective: number;
+    doctor: number;
+    civilian: number;
+  };
+}
+
+export interface PlayerSession {
+  id: string;
+  name: string;
+  roomCode: string;
+  role?: PlayerRole;
 }
 
 export interface GameRole {
-  role: Role;
+  role: PlayerRole;
   icon: React.ReactNode;
 }
 
