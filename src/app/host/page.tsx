@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { GameStore } from '@/utils/gameStore';
 import { RoleIcons, RoleColors } from '@/utils/roles';
 import type { Player, GameStatus } from '@/types/game';
 
-export default function HostPage() {
+function HostPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [room, setRoom] = useState<{
@@ -239,5 +239,13 @@ export default function HostPage() {
         </CardContent>
       </Card>
     </Container>
+  );
+}
+
+export default function HostPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HostPageContent />
+    </Suspense>
   );
 } 

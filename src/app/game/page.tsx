@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { GameStore } from '@/utils/gameStore';
 import { RoleIcons, RoleColors, RoleDescriptions } from '@/utils/roles';
 import type { Role, Player, GameStatus } from '@/types/game';
 
-export default function GamePage() {
+function GamePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [playerInfo, setPlayerInfo] = useState<{
@@ -224,5 +224,13 @@ export default function GamePage() {
         </CardContent>
       </Card>
     </Container>
+  );
+}
+
+export default function GamePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GamePageContent />
+    </Suspense>
   );
 } 
