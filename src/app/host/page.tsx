@@ -2,237 +2,125 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { GameStore } from '@/utils/gameStore';
+import { Container } from '@/components/ui/container';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Container } from '@/components/ui/container';
-import { GameStore } from '@/utils/gameStore';
-import { RoleIcons, RoleColors } from '@/utils/roles';
-import type { Player, GameStatus } from '@/types/game';
+import type { Player } from '@/types/game';
 
 function HostPageContent() {
+  const [room, setRoom] = useState<{ code: string; players: Player[] } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [room, setRoom] = useState<{
-    code: string;
-    hostName: string;
-    players: Player[];
-    status: GameStatus;
-  } | null>(null);
+  const code = searchParams.get('code')?.toUpperCase();
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const storedCode = localStorage.getItem('mafia_game_hostRoom');
-    
-    if (!code || code !== storedCode) {
-      router.push('/');
+    if (!code) {
+      router.replace('/?error=invalid-code');
       return;
     }
 
-    // Validate host session
-    if (!GameStore.validateSession(code)) {
-      localStorage.removeItem('mafia_game_hostRoom');
-      router.push('/?error=session-expired');
+    const isValidHost = GameStore.validateSession(code);
+    if (!isValidHost) {
+      router.replace('/?error=session-expired');
       return;
     }
 
-    const gameRoom = GameStore.getRoom(code);
-    if (!gameRoom) {
-      router.push('/');
+    const currentRoom = GameStore.getRoom(code);
+    if (!currentRoom) {
+      router.replace('/?error=room-not-found');
       return;
     }
 
-    setRoom(gameRoom);
+    setRoom(currentRoom);
+    setIsLoading(false);
 
-    // Subscribe to real-time updates
-    const unsubscribe = GameStore.subscribeToRoom(code, {
-      onPlayerJoined: (player: Player) => {
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            players: [...currentRoom.players, player]
-          };
-        });
-      },
-      onPlayerLeft: (playerId: string) => {
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            players: currentRoom.players.filter(p => p.id !== playerId)
-          };
-        });
-      },
-      onGameStarted: (players: Player[]) => {
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            players,
-            status: 'in-progress'
-          };
-        });
-      },
-      onGameReset: () => {
-        setRoom(currentRoom => {
-          if (!currentRoom) return null;
-          return {
-            ...currentRoom,
-            status: 'waiting',
-            players: currentRoom.players.map(({ id, name }) => ({ id, name }))
-          };
-        });
+    const cleanup = GameStore.subscribeToRoom(code, {
+      onPlayerJoined: (player) => {
+        setRoom(prev => prev ? {
+          ...prev,
+          players: [...prev.players, player]
+        } : null);
       }
     });
 
-    // Handle cleanup when host leaves/closes tab
-    const handleBeforeUnload = () => {
-      if (room) {
-        GameStore.cleanupRoom(room.code);
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (room) {
-        GameStore.cleanupRoom(room.code);
-      }
-      unsubscribe();
+      cleanup();
     };
-  }, [room, searchParams, router]);
+  }, [code, router]);
 
   const handleStartGame = async () => {
-    if (!room) return;
-    
-    if (room.players.length < 6) {
-      alert('Need at least 6 players to start');
+    if (!room || room.players.length < 2) {
+      alert('Need at least 2 players to start');
       return;
     }
 
-    // Calculate roles
-    const playerCount = room.players.length;
-    const mafiaCount = Math.max(1, Math.round(playerCount / 3));
-    const detectiveCount = playerCount >= 9 ? 2 : 1;
-    const doctorCount = playerCount >= 10 ? 2 : 1;
-    const villagerCount = playerCount - mafiaCount - detectiveCount - doctorCount;
-
-    // Create role array
-    const roles: string[] = [
-      ...Array(mafiaCount).fill('Mafia'),
-      ...Array(detectiveCount).fill('Detective'),
-      ...Array(doctorCount).fill('Doctor'),
-      ...Array(villagerCount).fill('Villager')
-    ];
-
-    // Shuffle roles
-    const shuffledRoles = roles.sort(() => Math.random() - 0.5);
-
-    // Assign roles to players
-    const playersWithRoles = room.players.map((player, index) => ({
-      ...player,
-      role: shuffledRoles[index] as Player['role']
-    }));
-
-    // Update game room with roles
-    await GameStore.startGame(room.code, playersWithRoles);
-  };
-
-  const handleNewGame = async () => {
-    if (!room) return;
-    await GameStore.resetGame(room.code);
-  };
-
-  const handleExitGame = async () => {
-    if (room) {
-      await GameStore.cleanupRoom(room.code);
-      localStorage.removeItem('mafia_game_hostRoom');
-      router.push('/');
+    try {
+      await fetch('/api/game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode: room.code,
+          event: 'game-started',
+          data: room.players
+        })
+      });
+    } catch (error) {
+      console.error('Start game error:', error);
+      alert('Failed to start game');
     }
   };
 
-  if (!room) {
+  const handleEndGame = async () => {
+    if (!room) return;
+    await GameStore.cleanupRoom(room.code);
+    router.replace('/');
+  };
+
+  if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!room) {
+    return <div>Room not found</div>;
   }
 
   return (
     <Container>
       <div className="text-center space-y-2 sm:space-y-3">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Game Room</h1>
-        <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 bg-white rounded-full shadow-sm">
-          <p className="text-base sm:text-lg font-mono tracking-widest text-gray-900">
-            Room Code: {room.code}
-          </p>
-        </div>
+        <p className="text-gray-600">Room Code: {room.code}</p>
       </div>
-      
+
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">
-          <div className="space-y-4 sm:space-y-6">
-            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900">Players</h3>
-                <span className="px-2.5 py-1 bg-white rounded-full text-sm font-medium text-gray-600 shadow-sm">
-                  {room.players.length} joined
-                </span>
-              </div>
-              
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Players ({room.players.length})</h2>
               <div className="space-y-2">
-                {room.players.map((player) => (
-                  <div 
-                    key={player.id}
-                    className="flex items-center justify-between p-2.5 bg-white rounded-lg shadow-sm"
-                  >
-                    <span className="font-medium text-gray-900">{player.name}</span>
-                    {room.status === 'in-progress' && player.role && (
-                      <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 
-                                    ${RoleColors[player.role]} text-sm font-medium`}>
-                        <span>{RoleIcons[player.role]}</span>
-                        <span>{player.role}</span>
-                      </div>
-                    )}
+                {room.players.map(player => (
+                  <div key={player.id} className="p-2 bg-gray-50 rounded">
+                    {player.name}
                   </div>
                 ))}
-
-                {room.players.length < 6 && (
-                  <div className="text-center py-2">
-                    <p className="text-sm text-gray-500">
-                      Need {6 - room.players.length} more player{room.players.length === 5 ? '' : 's'} to start
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="space-y-2 sm:space-y-3">
-              {room.status === 'waiting' ? (
-                <Button 
-                  onClick={handleStartGame} 
-                  disabled={room.players.length < 6}
-                  className={`w-full h-10 sm:h-12 text-base sm:text-lg font-medium transition-colors
-                    ${room.players.length >= 6 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-gray-400 cursor-not-allowed'}`}
-                >
-                  Start Game
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleNewGame} 
-                  className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 hover:bg-blue-700
-                           transition-colors"
-                >
-                  New Game (Shuffle Roles)
-                </Button>
-              )}
-
-              <Button 
-                onClick={handleExitGame} 
-                variant="outline" 
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
+            <div className="space-y-2">
+              <Button
+                onClick={handleStartGame}
+                className="w-full"
+                disabled={room.players.length < 2}
               >
-                Exit Game
+                Start Game
+              </Button>
+              <Button
+                onClick={handleEndGame}
+                variant="outline"
+                className="w-full"
+              >
+                End Game
               </Button>
             </div>
           </div>

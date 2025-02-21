@@ -9,6 +9,7 @@ import { GameStore } from '@/utils/gameStore';
 
 export function MafiaSetup() {
   const [hostName, setHostName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
 
   const handleCreateGame = async () => {
@@ -17,9 +18,24 @@ export function MafiaSetup() {
       return;
     }
 
-    const room = await GameStore.createRoom(hostName);
-    localStorage.setItem('hostRoom', room.code);
-    router.push(`/host?code=${room.code}`);
+    try {
+      setIsCreating(true);
+      const room = await GameStore.createRoom(hostName);
+      
+      // Wait a moment to ensure storage is set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (room.code) {
+        router.push(`/host?code=${room.code}`);
+      } else {
+        alert('Failed to create room');
+      }
+    } catch (error) {
+      console.error('Create room error:', error);
+      alert('Failed to create room');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -45,6 +61,7 @@ export function MafiaSetup() {
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your name"
                 maxLength={20}
+                disabled={isCreating}
               />
             </div>
 
@@ -53,13 +70,15 @@ export function MafiaSetup() {
                 onClick={handleCreateGame} 
                 className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 hover:bg-blue-700
                          transition-colors"
+                disabled={isCreating}
               >
-                Create Room
+                {isCreating ? 'Creating...' : 'Create Room'}
               </Button>
               <Button 
                 onClick={() => router.push('/')} 
                 variant="outline" 
                 className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
+                disabled={isCreating}
               >
                 Back
               </Button>
