@@ -36,7 +36,7 @@ function JoinPageContent() {
       } else {
         setError(null);
       }
-    } catch (_) {
+    } catch {
       setError('Invalid room code');
     }
   };
