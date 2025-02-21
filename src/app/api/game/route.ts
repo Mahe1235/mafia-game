@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { pusher } from '@/lib/pusher';
 import { rateLimit } from '@/lib/rateLimiter';
-import type { PlayerRole } from '@/types/game';
+import type { Player, PlayerRole } from '@/types/game';
 
 // In-memory storage (will reset on server restart)
 const rooms = new Map();
@@ -12,7 +12,7 @@ const MIN_PLAYERS = 6;
 const MAX_PLAYERS = 15;
 
 // Helper function to assign roles
-function assignRoles(players: any[]) {
+function assignRoles(players: Player[]): Player[] {
   const roles: PlayerRole[] = [];
   
   // Add roles based on player count
