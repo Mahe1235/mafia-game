@@ -10,7 +10,6 @@ import { GameStore } from '@/utils/gameStore';
 export function MafiaSetup() {
   const [hostName, setHostName] = useState('');
   const router = useRouter();
-  const roles = ['Mafia', 'Detective', 'Doctor', 'Villager'] as const;
 
   const handleCreateGame = async () => {
     if (!hostName.trim()) {
