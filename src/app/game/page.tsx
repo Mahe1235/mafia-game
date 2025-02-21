@@ -165,8 +165,16 @@ function GamePageContent() {
                 {room.status === 'started' && (
                   <div className="space-y-4">
                     <div className="text-center p-4 bg-blue-50 rounded-md">
-                      <h2 className="text-lg font-semibold text-blue-900">
-                        Your Role: {player.role ? player.role.charAt(0).toUpperCase() + player.role.slice(1) : 'Unassigned'}
+                      <h2 className="text-lg font-semibold text-blue-900 flex items-center justify-center gap-2">
+                        <span>
+                          {player.role === 'mafia' && '🔪'}
+                          {player.role === 'detective' && '🔍'}
+                          {player.role === 'doctor' && '💉'}
+                          {player.role === 'civilian' && '🏘️'}
+                        </span>
+                        <span>
+                          Your Role: {player.role ? (player.role.charAt(0).toUpperCase() + player.role.slice(1)) : 'Unassigned'}
+                        </span>
                       </h2>
                       <p className="text-sm text-blue-700 mt-1">
                         {getRoleDescription(player.role)}

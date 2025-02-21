@@ -153,8 +153,16 @@ function HostPageContent() {
               <h2 className="text-xl font-semibold mb-2">Players</h2>
               <div className="space-y-2">
                 {room.players.map(player => (
-                  <div key={player.id} className="p-2 bg-gray-50 rounded">
-                    {player.name}
+                  <div key={player.id} className="p-2 bg-gray-50 rounded flex justify-between items-center">
+                    <span>{player.name}</span>
+                    {room.status === 'started' && (
+                      <span className="text-sm text-gray-600">
+                        {player.role === 'mafia' && '🔪 Mafia'}
+                        {player.role === 'detective' && '🔍 Detective'}
+                        {player.role === 'doctor' && '💉 Doctor'}
+                        {player.role === 'civilian' && '🏘️ Villager'}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
