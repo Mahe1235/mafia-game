@@ -1,48 +1,58 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/container';
+import { useEffect } from 'react';
 
 export default function Home() {
-  const [playerName, setPlayerName] = useState('');
-  const [error, setError] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleAction = (action: 'create' | 'join') => {
-    if (!playerName.trim()) {
-      setError('Please enter your name');
-      return;
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      const errorMessages = {
+        'host-left': 'The host has ended the game.',
+        'session-expired': 'Your session has expired.',
+        'connection-lost': 'Connection to the game was lost.'
+      };
+      alert(errorMessages[error as keyof typeof errorMessages] || 'An error occurred.');
     }
-    setError('');
-    console.log(`${action} game clicked with name: ${playerName}`);
-  };
+  }, [searchParams]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Mafia Game</h1>
-      
-      <div className="flex flex-col gap-4 w-full max-w-sm px-4">
-        <input
-          type="text"
-          placeholder="Enter your name"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
-          className="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg text-black bg-white"
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        
-        <button 
-          className="px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-lg font-medium"
-          onClick={() => handleAction('create')}
-        >
-          Create Game
-        </button>
-        
-        <button 
-          className="px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-lg font-medium"
-          onClick={() => handleAction('join')}
-        >
-          Join Game
-        </button>
+    <Container>
+      <div className="text-center space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900">
+          Mafia Game
+        </h1>
+        <p className="text-base sm:text-lg text-gray-600">
+          Play the classic social deduction game with friends!
+        </p>
       </div>
-    </div>
+
+      <Card className="shadow-lg">
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-3 sm:space-y-4">
+            <Button 
+              onClick={() => router.push('/create')}
+              className="w-full h-12 sm:h-14 text-lg sm:text-xl font-medium bg-blue-600 hover:bg-blue-700
+                       transition-colors"
+            >
+              Create Game
+            </Button>
+            <Button 
+              onClick={() => router.push('/join')}
+              className="w-full h-12 sm:h-14 text-lg sm:text-xl font-medium bg-green-600 hover:bg-green-700
+                       transition-colors"
+            >
+              Join Game
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </Container>
   );
 }
