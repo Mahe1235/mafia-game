@@ -151,6 +151,12 @@ function GamePageContent() {
                             : 'bg-gray-50'
                         }`}
                       >
+                        <span className="text-xl mr-2">
+                          {p.role === 'mafia' && '🔪'}
+                          {p.role === 'detective' && '🔍'}
+                          {p.role === 'doctor' && '💉'}
+                          {p.role === 'civilian' && '🏘️'}
+                        </span>
                         {p.name} {p.id === player.id && '(You)'}
                       </div>
                     ))}
@@ -166,7 +172,7 @@ function GamePageContent() {
                   <div className="space-y-4">
                     <div className="text-center p-4 bg-blue-50 rounded-md">
                       <h2 className="text-lg font-semibold text-blue-900 flex items-center justify-center gap-2">
-                        <span>
+                        <span className="text-2xl">
                           {player.role === 'mafia' && '🔪'}
                           {player.role === 'detective' && '🔍'}
                           {player.role === 'doctor' && '💉'}
@@ -193,6 +199,12 @@ function GamePageContent() {
                                 : 'bg-gray-50'
                             }`}
                           >
+                            <span className="text-xl mr-2">
+                              {p.role === 'mafia' && '🔪'}
+                              {p.role === 'detective' && '🔍'}
+                              {p.role === 'doctor' && '💉'}
+                              {p.role === 'civilian' && '🏘️'}
+                            </span>
                             {p.name} {p.id === player.id && '(You)'}
                             {!p.isAlive && ' (Dead)'}
                           </div>
@@ -213,15 +225,15 @@ function GamePageContent() {
 function getRoleDescription(role?: string): string {
   switch (role) {
     case 'mafia':
-      return 'You are part of the Mafia team. Eliminate other players without getting caught!';
+      return '🔪 "Make them an offer they can\'t refuse"... by eliminating them! Don\'t worry, it\'s just a game... right?';
     case 'detective':
-      return 'You are the Detective. Each night, you can investigate one player to learn their role.';
+      return '🔍 CSI who? You\'re basically Batman without the cool car. Time to solve some mysteries!';
     case 'doctor':
-      return 'You are the Doctor. Each night, you can protect one player from elimination.';
+      return '💉 Grey\'s Anatomy meets Among Us! Save lives at night, try not to get killed during the day. Just another day at the office!';
     case 'civilian':
-      return 'You are a Civilian. Work with others to identify and eliminate the Mafia!';
+      return '🏘️ No special powers, just vibes and trust issues. Living the paranoid life one accusation at a time!';
     default:
-      return 'Waiting for role assignment...';
+      return '⌛ Plot twist loading... Will you be the hero or the one who "takes care of business"?';
   }
 }
 
