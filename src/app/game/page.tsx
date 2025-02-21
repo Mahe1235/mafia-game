@@ -70,7 +70,7 @@ function GamePageContent() {
 
     // Subscribe to real-time updates
     const unsubscribe = GameStore.subscribeToRoom(code, {
-      onPlayerJoin: (player) => {
+      onPlayerJoined: (player: Player) => {
         setRoom(currentRoom => {
           if (!currentRoom) return null;
           return {
@@ -79,7 +79,7 @@ function GamePageContent() {
           };
         });
       },
-      onPlayerLeave: (playerId) => {
+      onPlayerLeft: (playerId: string) => {
         setRoom(currentRoom => {
           if (!currentRoom) return null;
           return {
@@ -88,8 +88,8 @@ function GamePageContent() {
           };
         });
       },
-      onGameStart: (players) => {
-        const updatedPlayer = players.find(p => p.id === parsedInfo.id);
+      onGameStarted: (players: Player[]) => {
+        const updatedPlayer = players.find((p: Player) => p.id === parsedInfo.id);
         if (updatedPlayer?.role) {
           const updatedInfo = { ...parsedInfo, role: updatedPlayer.role };
           setPlayerInfo(updatedInfo);

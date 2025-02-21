@@ -45,7 +45,7 @@ function HostPageContent() {
 
     // Subscribe to real-time updates
     const unsubscribe = GameStore.subscribeToRoom(code, {
-      onPlayerJoin: (player) => {
+      onPlayerJoined: (player: Player) => {
         setRoom(currentRoom => {
           if (!currentRoom) return null;
           return {
@@ -54,7 +54,7 @@ function HostPageContent() {
           };
         });
       },
-      onPlayerLeave: (playerId) => {
+      onPlayerLeft: (playerId: string) => {
         setRoom(currentRoom => {
           if (!currentRoom) return null;
           return {
@@ -63,7 +63,7 @@ function HostPageContent() {
           };
         });
       },
-      onGameStart: (players) => {
+      onGameStarted: (players: Player[]) => {
         setRoom(currentRoom => {
           if (!currentRoom) return null;
           return {
