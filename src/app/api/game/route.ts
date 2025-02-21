@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { pusher } from '@/lib/pusher';
 import { rateLimit } from '@/lib/rateLimiter';
 import type { Player, PlayerRole } from '@/types/game';
+import { MAFIA_SETUPS } from '@/components/game/MafiaSetup';
 
 // In-memory storage (will reset on server restart)
 const rooms = new Map();
@@ -13,23 +14,38 @@ const MAX_PLAYERS = 15;
 
 // Helper function to assign roles
 function assignRoles(players: Player[]): Player[] {
-  const roles: PlayerRole[] = [];
+  const playerCount = players.length;
   
-  // Add roles based on player count
-  roles.push('mafia');  // At least 1 mafia
-  roles.push('detective');  // 1 detective
-  roles.push('doctor');  // 1 doctor
+  // Get the appropriate setup for the player count
+  const setup = MAFIA_SETUPS.find(s => 
+    playerCount >= s.minPlayers && playerCount <= s.maxPlayers
+  );
   
-  // Fill rest with villagers
-  while (roles.length < players.length) {
-    if (roles.length < players.length * 0.3) { // Up to 30% can be mafia
-      roles.push('mafia');
-    } else {
-      roles.push('villager');
-    }
+  if (!setup) {
+    throw new Error(`Invalid player count: ${playerCount}. Must be between 6 and 15 players.`);
   }
 
-  // Shuffle roles
+  const roles: PlayerRole[] = [];
+  
+  // Add roles based on setup
+  for (let i = 0; i < setup.mafia; i++) {
+    roles.push('mafia');
+  }
+  
+  for (let i = 0; i < setup.detective; i++) {
+    roles.push('detective');
+  }
+  
+  for (let i = 0; i < setup.doctor; i++) {
+    roles.push('doctor');
+  }
+  
+  // Fill remaining slots with villagers
+  while (roles.length < playerCount) {
+    roles.push('villager');
+  }
+
+  // Shuffle roles using Fisher-Yates algorithm
   for (let i = roles.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [roles[i], roles[j]] = [roles[j], roles[i]];

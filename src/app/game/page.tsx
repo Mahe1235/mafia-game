@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { pusherClient } from '@/lib/pusher';
 import type { GameRoom, Player, PlayerSession } from '@/types/game';
+import { RoleDescriptions, RoleIcons, RoleNames } from '@/utils/roles';
 
 function GamePageContent() {
   const [room, setRoom] = useState<GameRoom | null>(null);
@@ -173,17 +174,14 @@ function GamePageContent() {
                     <div className="text-center p-4 bg-blue-50 rounded-md">
                       <h2 className="text-lg font-semibold text-blue-900 flex items-center justify-center gap-2">
                         <span className="text-2xl">
-                          {player.role === 'mafia' && '🔪'}
-                          {player.role === 'detective' && '🔍'}
-                          {player.role === 'doctor' && '💉'}
-                          {player.role === 'villager' && '🏘️'}
+                          {player.role && RoleIcons[player.role]}
                         </span>
                         <span>
-                          Your Role: {player.role ? (player.role.charAt(0).toUpperCase() + player.role.slice(1)) : 'Unassigned'}
+                          Your Role: {player.role ? RoleNames[player.role] : RoleNames.unassigned}
                         </span>
                       </h2>
                       <p className="text-sm text-blue-700 mt-1">
-                        {getRoleDescription(player.role)}
+                        {player.role ? RoleDescriptions[player.role] : RoleDescriptions.unassigned}
                       </p>
                     </div>
 
@@ -222,21 +220,6 @@ function GamePageContent() {
       </Card>
     </Container>
   );
-}
-
-function getRoleDescription(role?: string): string {
-  switch (role) {
-    case 'mafia':
-      return '🔪 "Make them an offer they can\'t refuse"... by eliminating them! Don\'t worry, it\'s just a game... right?';
-    case 'detective':
-      return '🔍 CSI who? You\'re basically Batman without the cool car. Time to solve some mysteries!';
-    case 'doctor':
-      return '💉 Grey\'s Anatomy meets Among Us! Save lives at night, try not to get killed during the day. Just another day at the office!';
-    case 'villager':
-      return '🏘️ No special powers, just vibes and trust issues. Living the paranoid life one accusation at a time!';
-    default:
-      return '⌛ Plot twist loading... Will you be the hero or the one who "takes care of business"?';
-  }
 }
 
 export default function GamePage() {

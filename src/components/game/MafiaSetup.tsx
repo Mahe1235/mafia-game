@@ -89,3 +89,38 @@ export function MafiaSetup() {
     </Container>
   );
 }
+
+export const MAFIA_SETUPS = [
+  {
+    minPlayers: 6,
+    maxPlayers: 8,
+    mafia: 2,
+    detective: 1,
+    doctor: 1
+    // Rest are villagers (2-4)
+  },
+  {
+    minPlayers: 9,
+    maxPlayers: 11,
+    mafia: 3,
+    detective: 2,
+    doctor: 1
+    // Rest are villagers (3-5)
+  },
+  {
+    minPlayers: 12,
+    maxPlayers: 14,
+    mafia: 4,
+    detective: 2,
+    doctor: 2
+    // Rest are villagers (4-6)
+  },
+  {
+    minPlayers: 15,
+    maxPlayers: 15,
+    mafia: 4,
+    detective: 2,
+    doctor: 2
+    // Rest are villagers (7)
+  }
+];
