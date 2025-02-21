@@ -1,12 +1,12 @@
 'use client';
 
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
-import { useEffect } from 'react';
 
-export default function Home() {
+function HomePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,29 +24,25 @@ export default function Home() {
 
   return (
     <Container>
-      <div className="text-center space-y-3 sm:space-y-4 mb-6 sm:mb-8">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900">
-          Mafia Game
-        </h1>
-        <p className="text-base sm:text-lg text-gray-600">
-          Play the classic social deduction game with friends!
-        </p>
+      <div className="text-center space-y-2 sm:space-y-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Mafia Game</h1>
+        <p className="text-gray-600">Create or join a game to start playing</p>
       </div>
 
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-2 sm:space-y-3">
             <Button 
-              onClick={() => router.push('/create')}
-              className="w-full h-12 sm:h-14 text-lg sm:text-xl font-medium bg-blue-600 hover:bg-blue-700
+              onClick={() => router.push('/create')} 
+              className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 hover:bg-blue-700
                        transition-colors"
             >
               Create Game
             </Button>
             <Button 
-              onClick={() => router.push('/join')}
-              className="w-full h-12 sm:h-14 text-lg sm:text-xl font-medium bg-green-600 hover:bg-green-700
-                       transition-colors"
+              onClick={() => router.push('/join')} 
+              variant="outline" 
+              className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
             >
               Join Game
             </Button>
@@ -54,5 +50,13 @@ export default function Home() {
         </CardContent>
       </Card>
     </Container>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomePageContent />
+    </Suspense>
   );
 }
