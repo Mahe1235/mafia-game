@@ -10,6 +10,7 @@ import { GameStore } from '@/utils/gameStore';
 function JoinPageContent() {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,19 +27,25 @@ function JoinPageContent() {
       return;
     }
 
-    const player = await GameStore.joinRoom(roomCode.toUpperCase(), playerName);
-    if (!player) {
-      alert('Failed to join room. Please check the room code.');
-      return;
+    try {
+      setIsJoining(true);
+      const player = await GameStore.joinRoom(roomCode.toUpperCase(), playerName);
+      
+      if (!player) {
+        alert('Room not found or unable to join. Please check the room code.');
+        return;
+      }
+
+      // Wait a moment to ensure storage is set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      router.push(`/game?code=${roomCode.toUpperCase()}`);
+    } catch (error) {
+      console.error('Join error:', error);
+      alert('Failed to join room. Please try again.');
+    } finally {
+      setIsJoining(false);
     }
-
-    localStorage.setItem('playerInfo', JSON.stringify({
-      id: player.id,
-      name: playerName,
-      roomCode: roomCode.toUpperCase()
-    }));
-
-    router.push(`/game?code=${roomCode.toUpperCase()}`);
   };
 
   return (
@@ -64,6 +71,7 @@ function JoinPageContent() {
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter room code"
                 maxLength={6}
+                disabled={isJoining}
               />
             </div>
 
@@ -80,6 +88,7 @@ function JoinPageContent() {
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your name"
                 maxLength={20}
+                disabled={isJoining}
               />
             </div>
 
@@ -88,13 +97,15 @@ function JoinPageContent() {
                 onClick={handleJoinGame} 
                 className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 hover:bg-blue-700
                          transition-colors"
+                disabled={isJoining}
               >
-                Join Game
+                {isJoining ? 'Joining...' : 'Join Game'}
               </Button>
               <Button 
                 onClick={() => router.push('/')} 
                 variant="outline" 
                 className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
+                disabled={isJoining}
               >
                 Back
               </Button>
