@@ -1,101 +1,184 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState } from 'react';
+import { Users, Crown, Copy } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [gameMode, setGameMode] = useState('landing'); // landing, create, join, game
+  const [playerName, setPlayerName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+  const [isHost, setIsHost] = useState(false);
+  const [players, setPlayers] = useState<Array<{name: string, isHost: boolean, isReady: boolean}>>([]);
+  const [gameStarted, setGameStarted] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  // Generate a random 6-character room code
+  const generateRoomCode = () => {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setRoomCode(code);
+    return code;
+  };
+
+  const handleCreateRoom = () => {
+    if (playerName.trim()) {
+      setIsHost(true);
+      generateRoomCode();
+      setPlayers([{ name: playerName, isHost: true, isReady: true }]);
+      setGameMode('create');
+    }
+  };
+
+  const handleJoinRoom = () => {
+    if (playerName.trim() && roomCode.trim()) {
+      setPlayers(prev => [...prev, { name: playerName, isHost: false, isReady: false }]);
+      setGameMode('game');
+    }
+  };
+
+  const handleCopyRoomCode = () => {
+    navigator.clipboard.writeText(roomCode);
+  };
+
+  const handleStartGame = () => {
+    if (players.length >= 6 && players.every(p => p.isReady)) {
+      setGameStarted(true);
+    }
+  };
+
+  const handleReady = () => {
+    setPlayers(prev => 
+      prev.map(p => 
+        p.name === playerName ? { ...p, isReady: true } : p
+      )
+    );
+  };
+
+  const renderLanding = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <input
+          className="w-full px-4 py-2 border rounded"
+          placeholder="Enter your name"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4">
+        <button 
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={() => setGameMode('create')}
+          disabled={!playerName.trim()}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Create New Game
+        </button>
+        <button 
+          className="w-full border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-50"
+          onClick={() => setGameMode('join')}
+          disabled={!playerName.trim()}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Join Game
+        </button>
+      </div>
     </div>
+  );
+
+  const renderJoin = () => (
+    <div className="space-y-6">
+      <input
+        className="w-full px-4 py-2 border rounded"
+        placeholder="Enter room code"
+        value={roomCode}
+        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+        maxLength={6}
+      />
+      <button 
+        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        onClick={handleJoinRoom}
+        disabled={!roomCode.trim()}
+      >
+        Join Room
+      </button>
+      <button 
+        className="w-full border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-50"
+        onClick={() => setGameMode('landing')}
+      >
+        Back
+      </button>
+    </div>
+  );
+
+  const renderGameRoom = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium">Room Code:</div>
+        <div className="flex items-center space-x-2">
+          <code className="bg-gray-100 px-2 py-1 rounded">{roomCode}</code>
+          <button
+            className="p-1 hover:bg-gray-100 rounded"
+            onClick={handleCopyRoomCode}
+          >
+            <Copy className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-sm font-medium">Players ({players.length}/20):</div>
+        {players.map((player, index) => (
+          <div 
+            key={index}
+            className="flex items-center justify-between p-2 bg-gray-100 rounded"
+          >
+            <div className="flex items-center space-x-2">
+              {player.isHost && <Crown className="h-4 w-4 text-yellow-500" />}
+              <span>{player.name}</span>
+            </div>
+            <div className="text-sm">
+              {player.isReady ? "Ready" : "Not Ready"}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {!isHost && !gameStarted && (
+        <button 
+          className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          onClick={handleReady}
+          disabled={players.find(p => p.name === playerName)?.isReady}
+        >
+          Ready Up
+        </button>
+      )}
+
+      {isHost && (
+        <button
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={handleStartGame}
+          disabled={players.length < 6 || !players.every(p => p.isReady)}
+        >
+          Start Game
+        </button>
+      )}
+
+      {players.length < 6 && (
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded text-sm">
+          Waiting for more players... Need {6 - players.length} more to start.
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <main className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-md mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-bold text-center mb-6">Mafia Game</h1>
+          {gameMode === 'landing' && renderLanding()}
+          {gameMode === 'join' && renderJoin()}
+          {(gameMode === 'create' || gameMode === 'game') && renderGameRoom()}
+        </div>
+      </div>
+    </main>
   );
 }
