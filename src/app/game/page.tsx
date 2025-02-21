@@ -155,7 +155,7 @@ function GamePageContent() {
                           {p.role === 'mafia' && '🔪'}
                           {p.role === 'detective' && '🔍'}
                           {p.role === 'doctor' && '💉'}
-                          {p.role === 'civilian' && '🏘️'}
+                          {p.role === 'villager' && '🏘️'}
                         </span>
                         {p.name} {p.id === player.id && '(You)'}
                       </div>
@@ -176,7 +176,7 @@ function GamePageContent() {
                           {player.role === 'mafia' && '🔪'}
                           {player.role === 'detective' && '🔍'}
                           {player.role === 'doctor' && '💉'}
-                          {player.role === 'civilian' && '🏘️'}
+                          {player.role === 'villager' && '🏘️'}
                         </span>
                         <span>
                           Your Role: {player.role ? (player.role.charAt(0).toUpperCase() + player.role.slice(1)) : 'Unassigned'}
@@ -199,12 +199,14 @@ function GamePageContent() {
                                 : 'bg-gray-50'
                             }`}
                           >
-                            <span className="text-xl mr-2">
-                              {p.role === 'mafia' && '🔪'}
-                              {p.role === 'detective' && '🔍'}
-                              {p.role === 'doctor' && '💉'}
-                              {p.role === 'civilian' && '🏘️'}
-                            </span>
+                            {p.id === player.id && (
+                              <span className="text-xl mr-2">
+                                {p.role === 'mafia' && '🔪'}
+                                {p.role === 'detective' && '🔍'}
+                                {p.role === 'doctor' && '💉'}
+                                {p.role === 'villager' && '🏘️'}
+                              </span>
+                            )}
                             {p.name} {p.id === player.id && '(You)'}
                             {!p.isAlive && ' (Dead)'}
                           </div>
@@ -230,7 +232,7 @@ function getRoleDescription(role?: string): string {
       return '🔍 CSI who? You\'re basically Batman without the cool car. Time to solve some mysteries!';
     case 'doctor':
       return '💉 Grey\'s Anatomy meets Among Us! Save lives at night, try not to get killed during the day. Just another day at the office!';
-    case 'civilian':
+    case 'villager':
       return '🏘️ No special powers, just vibes and trust issues. Living the paranoid life one accusation at a time!';
     default:
       return '⌛ Plot twist loading... Will you be the hero or the one who "takes care of business"?';

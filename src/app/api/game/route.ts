@@ -20,12 +20,12 @@ function assignRoles(players: Player[]): Player[] {
   roles.push('detective');  // 1 detective
   roles.push('doctor');  // 1 doctor
   
-  // Fill rest with civilians
+  // Fill rest with villagers
   while (roles.length < players.length) {
     if (roles.length < players.length * 0.3) { // Up to 30% can be mafia
       roles.push('mafia');
     } else {
-      roles.push('civilian');
+      roles.push('villager');
     }
   }
 

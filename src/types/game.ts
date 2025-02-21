@@ -1,7 +1,7 @@
 import React from 'react';
 
 export type GameStatus = 'waiting' | 'started' | 'ended';
-export type PlayerRole = 'unassigned' | 'mafia' | 'detective' | 'doctor' | 'civilian';
+export type PlayerRole = 'mafia' | 'detective' | 'doctor' | 'villager' | 'unassigned';
 
 export interface Player {
   id: string;
