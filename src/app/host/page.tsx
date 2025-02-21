@@ -184,7 +184,7 @@ function HostPageContent() {
                         {player.role === 'mafia' && '🔪 Mafia'}
                         {player.role === 'detective' && '🔍 Detective'}
                         {player.role === 'doctor' && '💉 Doctor'}
-                        {player.role === 'civilian' && '🏘️ Villager'}
+                        {player.role === 'villager' && '🏘️ Villager'}
                       </span>
                     )}
                   </div>
