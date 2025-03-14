@@ -9,17 +9,21 @@ const nextConfig = {
     // In production builds, don't run TypeScript type checking
     ignoreBuildErrors: true,
   },
-  // Skip static generation for problematic pages
-  output: 'hybrid',
   
-  // Explicitly mark problematic routes as server-side only
+  // Set output mode to recommended version
+  output: 'standalone',
+  
+  // Update to use correct option names for Next.js 15
   experimental: {
-    serverComponentsExternalPackages: ['@apollo/client', 'pusher-js'],
-    // Disable specific pages from static generation
-    ppr: false
+    // External packages that should be treated as server-side only
+    serverExternalPackages: ['@apollo/client', 'pusher-js']
   },
 
-  // Custom route handling to create alternates for the 404 page
+  // Remove specific pages from static generation
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
+
+  // Custom handling for 404 routing
   redirects: async () => {
     return [
       {
@@ -28,11 +32,7 @@ const nextConfig = {
         permanent: false,
       },
     ]
-  },
-
-  // Disable static generation of not-found pages in production
-  // This is crucial to avoid the useContext error
-  staticNotFound: false
+  }
 }
 
 module.exports = nextConfig 

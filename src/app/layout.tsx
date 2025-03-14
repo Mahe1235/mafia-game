@@ -1,6 +1,14 @@
 import { GraphQLProvider } from '@/components/providers/GraphQLProvider';
 import './globals.css'
 
+// Force dynamic server-side rendering for this layout
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
+  title: 'Mafia Game',
+  description: 'A multiplayer social deduction game',
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -10,7 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body suppressHydrationWarning>
         <GraphQLProvider>
-          {children}
+          <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+            {children}
+          </main>
         </GraphQLProvider>
       </body>
     </html>
