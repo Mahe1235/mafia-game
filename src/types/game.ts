@@ -4,7 +4,7 @@ import React from 'react';
  * Game-related type definitions
  */
 export type GameStatus = 'waiting' | 'started' | 'ended';
-export type PlayerRole = 'mafia' | 'detective' | 'doctor' | 'villager';
+export type PlayerRole = 'mafia' | 'detective' | 'doctor' | 'villager' | 'unassigned';
 export type GamePhase = 'day' | 'night' | 'voting';
 export type GameAction = 'vote' | 'investigate' | 'protect' | 'kill';
 
