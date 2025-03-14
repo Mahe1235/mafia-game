@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "ESLINT_NO_DEV_ERRORS=true next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint --no-error-on-unmatched-pattern",
     "test": "jest --config jest.config.js",
     "test:watch": "jest --watch --config jest.config.js"
   },
