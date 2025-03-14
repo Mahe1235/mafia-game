@@ -1,23 +1,37 @@
 /**
- * Custom 404 page as a pure server component
- * No client-side features can be used here
+ * Ultra simple 404 page with no dependencies - server component only
  */
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-16 bg-gray-50">
-      <div className="text-center p-8 max-w-md">
-        <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
-        <h2 className="text-3xl font-semibold text-gray-700 mb-8">Page Not Found</h2>
-        <p className="text-lg text-gray-600 mb-8">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <a
-          href="/"
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-        >
-          Return Home
-        </a>
-      </div>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      padding: '2rem',
+      textAlign: 'center',
+      backgroundColor: '#f8fafc'
+    }}>
+      <h1 style={{ fontSize: '4rem', marginBottom: '1rem', color: '#1e293b' }}>404</h1>
+      <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#334155' }}>Page Not Found</h2>
+      <p style={{ fontSize: '1.25rem', marginBottom: '2rem', color: '#64748b' }}>
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <a
+        href="/"
+        style={{
+          backgroundColor: '#3b82f6',
+          color: 'white',
+          padding: '0.75rem 1.5rem',
+          borderRadius: '0.5rem',
+          textDecoration: 'none',
+          fontWeight: 'bold',
+          display: 'inline-block'
+        }}
+      >
+        Return Home
+      </a>
     </div>
   );
 } 
