@@ -20,6 +20,58 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Testing
+
+The project includes a comprehensive test suite that ensures the game functions properly across various scenarios.
+
+### Test Categories
+
+1. **Role Assignment & Game Logic** - Tests the core game mechanics:
+   - Proper role distribution based on player count
+   - Win condition detection
+   - Game setup validation
+
+2. **Authentication & Session Flow** - Tests user authentication:
+   - Session persistence
+   - Host/player session validation
+   - Handling invalid sessions
+
+3. **Error Handling & Edge Cases** - Tests application resilience:
+   - Network errors
+   - Malformed response data
+   - WebSocket connection failures
+   - API errors during gameplay
+
+4. **Game Event Sequence** - Tests gameplay flows:
+   - Game start/end sequences
+   - Player elimination
+   - Turn-based actions
+
+5. **Game Rules & Win Conditions** - Tests rule enforcement:
+   - Win condition detection (mafia vs. villagers)
+   - Minimum player requirements
+   - Role distribution validation
+
+### Running Tests
+
+To run all tests:
+
+```bash
+npm test
+```
+
+To run a specific test category:
+
+```bash
+npm test -- -t "Role Assignment"
+```
+
+To run tests in watch mode during development:
+
+```bash
+npm run test:watch
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

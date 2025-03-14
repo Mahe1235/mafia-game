@@ -1,11 +1,11 @@
-import { PlayerRole } from '@/types/game';
+import type { PlayerRole } from '@/types/game';
 
 export const RoleIcons: Record<PlayerRole, string> = {
   mafia: '🔪',
   detective: '🔍',
   doctor: '💉',
-  villager: '👥',
-  unassigned: '⌛'
+  villager: '🏘️',
+  unassigned: '❓'
 };
 
 export const RoleColors: Record<PlayerRole, string> = {

@@ -1,3 +1,4 @@
+import { GraphQLProvider } from '@/components/providers/GraphQLProvider';
 import './globals.css'
 
 export default function RootLayout({
@@ -8,7 +9,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        {children}
+        <GraphQLProvider>
+          {children}
+        </GraphQLProvider>
       </body>
     </html>
   )

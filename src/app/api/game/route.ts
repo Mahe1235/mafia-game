@@ -136,12 +136,31 @@ export async function POST(req: Request) {
           return new NextResponse('Room not found', { status: 404 });
         }
 
-        const shuffledPlayers = assignRoles(roomToShuffle.players);
+        // Reset all players to alive and reassign roles
+        const shuffledPlayers = assignRoles(
+          roomToShuffle.players.map(p => ({ ...p, isAlive: true }))
+        );
         roomToShuffle.players = shuffledPlayers;
         rooms.set(roomCode, roomToShuffle);
 
-        // Notify all players of new roles
+        // Notify all players
         await pusher.trigger(`game-${roomCode}`, 'game-started', shuffledPlayers);
+        break;
+
+      case 'player-eliminated':
+        const { playerId } = data;
+        const roomToUpdate = rooms.get(roomCode);
+        if (!roomToUpdate) {
+          return new NextResponse('Room not found', { status: 404 });
+        }
+
+        roomToUpdate.players = roomToUpdate.players.map(p =>
+          p.id === playerId ? { ...p, isAlive: false } : p
+        );
+        rooms.set(roomCode, roomToUpdate);
+
+        // Notify all players
+        await pusher.trigger(`game-${roomCode}`, 'player-eliminated', playerId);
         break;
 
       default:
