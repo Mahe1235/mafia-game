@@ -11,7 +11,9 @@
     "test:watch": "jest --watch --config jest.config.js"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.10",
     "@apollo/server": "^4.11.3",
+    "@as-integrations/next": "^3.0.0",
     "clsx": "^2.1.1",
     "graphql": "^16.10.0",
     "limiter": "^3.0.0",
