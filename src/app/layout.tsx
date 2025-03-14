@@ -1,4 +1,5 @@
 import { GraphQLProvider } from '@/components/providers/GraphQLProvider';
+import { ConnectionStatus } from '@/components/ui/ConnectionStatus';
 import './globals.css'
 
 // Force dynamic server-side rendering for this layout
@@ -20,6 +21,7 @@ export default function RootLayout({
         <GraphQLProvider>
           <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
             {children}
+            <ConnectionStatus />
           </main>
         </GraphQLProvider>
       </body>

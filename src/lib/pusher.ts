@@ -13,27 +13,62 @@ export const pusher = new Pusher({
 
 // Enhanced client-side Pusher instance with better error handling
 const createPusherClient = () => {
-  const client = new PusherClient(
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY || '',
-    {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER || '',
-      forceTLS: true,
-      enabledTransports: ['ws', 'wss'],
-      // Add reconnection exponential backoff
-      activityTimeout: 30000, // 30s
-      pongTimeout: 15000, // 15s
-      // Increased timeouts for more resilience
-      timeout: 20000,
+  // Log configuration for debugging
+  const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY;
+  const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER;
+  
+  if (!appKey || !cluster) {
+    logger.error('Pusher configuration missing', { 
+      appKey: appKey ? 'set' : 'missing', 
+      cluster: cluster ? 'set' : 'missing'
+    });
+    
+    // In development, show more details to help debug
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Pusher configuration incomplete:', {
+        NEXT_PUBLIC_PUSHER_APP_KEY: appKey || '❌ missing',
+        NEXT_PUBLIC_PUSHER_APP_CLUSTER: cluster || '❌ missing'
+      });
     }
-  );
+  }
+
+  const client = new PusherClient(appKey || '', {
+    cluster: cluster || '',
+    forceTLS: true,
+    enabledTransports: ['ws', 'wss'],
+    disabledTransports: ['xhr_streaming', 'xhr_polling', 'sockjs'],
+    // Add reconnection exponential backoff
+    activityTimeout: 30000, // 30s
+    pongTimeout: 15000, // 15s
+    // Increased timeouts for more resilience
+    timeout: 20000,
+    // Auto reconnect on disconnection
+    autoReconnect: true,
+    // Maximum number of reconnection attempts
+    maxReconnectionAttempts: 10
+  });
 
   // Add global connection logging and error handling
   client.connection.bind('error', (err: any) => {
     logger.error('Pusher connection error:', err);
+    
+    // In development, log more details to console
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Pusher connection error:', {
+        message: err.message || 'Unknown error',
+        type: err.type || 'Unknown type',
+        data: err.data || {},
+        config: {
+          key: appKey ? `${appKey.substring(0, 5)}...` : 'not set',
+          cluster: cluster || 'not set'
+        }
+      });
+    }
   });
 
   client.connection.bind('connected', () => {
     logger.info('Pusher connected successfully');
+    // Reset any connection error state in the app if needed
   });
 
   client.connection.bind('disconnected', () => {
@@ -46,6 +81,20 @@ const createPusherClient = () => {
 
   client.connection.bind('reconnecting', () => {
     logger.warn('Pusher reconnecting...');
+  });
+
+  client.connection.bind('failed', () => {
+    logger.error('Pusher connection failed after multiple attempts');
+    
+    // In development, log helpful debugging information
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Pusher connection failed. Check your configuration:', {
+        NEXT_PUBLIC_PUSHER_APP_KEY: appKey ? 'set' : 'missing',
+        NEXT_PUBLIC_PUSHER_APP_CLUSTER: cluster ? 'set' : 'missing',
+        url: client.connection.options.wsHost || 'unknown',
+        connectionState: client.connection.state
+      });
+    }
   });
 
   return client;
