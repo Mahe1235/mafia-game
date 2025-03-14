@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import Link from 'next/link';
@@ -24,27 +24,54 @@ function HomePageContent() {
   }, [searchParams]);
 
   return (
-    <Container>
-      <div className="text-center space-y-2 sm:space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Mafia Game</h1>
-        <p className="text-gray-600">Create or join a game to start playing</p>
+    <Container 
+      variant="dark" 
+      size="compact" 
+      padding="md"
+      animation="fadeIn" 
+      className="flex flex-col justify-center items-center"
+    >
+      <div className="text-center space-y-4 mb-8">
+        <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+          Mafia Game
+        </h1>
+        <p className="text-xl text-foreground/80">
+          Create or join a game to start playing
+        </p>
       </div>
 
-      <Card className="shadow-lg">
-        <CardContent className="p-4 sm:p-6">
-          <div className="space-y-2 sm:space-y-3">
-            <Link href="/create" className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-lg font-medium transition-colors inline-flex justify-center items-center">
-              Create Game
+      <Card 
+        variant="default" 
+        hover="lift" 
+        className="w-full max-w-sm border-border/50 overflow-hidden"
+      >
+        <CardContent className="p-8 space-y-6">
+          <div className="grid grid-cols-1 gap-4">
+            <Link href="/create" className="w-full">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                className="w-full font-semibold" 
+              >
+                Create Game
+              </Button>
             </Link>
+            
             <Button 
-              onClick={() => router.push('/join')} 
               variant="outline" 
-              className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
+              size="lg" 
+              className="w-full font-semibold" 
+              onClick={() => router.push('/join')}
             >
               Join Game
             </Button>
           </div>
         </CardContent>
+        <CardFooter className="bg-background/50 p-4 border-t border-border/50 justify-center">
+          <p className="text-sm text-foreground/70">
+            Night falls. The town sleeps. But some are still awake...
+          </p>
+        </CardFooter>
       </Card>
     </Container>
   );
@@ -52,7 +79,11 @@ function HomePageContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg animate-pulse">Loading...</div>
+      </div>
+    }>
       <HomePageContent />
     </Suspense>
   );
