@@ -177,7 +177,11 @@ function GameContent() {
               {player.role ? RoleDescriptions[player.role] : RoleDescriptions.unassigned}
             </p>
             {player.role && player.role !== 'villager' && (
-              <Button onClick={() => console.log('Special role action')} className="mt-4">
+              <Button 
+                variant="secondary" 
+                className="mt-4 bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                onClick={() => console.log('Special role action')}
+              >
                 Use Special Action
               </Button>
             )}
@@ -211,9 +215,9 @@ function GameContent() {
                   </div>
                   {room.status === 'started' && p.isAlive && p.id === player.id && (
                     <Button 
-                      variant="ghost" 
+                      variant="secondary" 
                       size="sm" 
-                      className="mt-2 w-full"
+                      className="mt-2 w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
                       onClick={() => console.log(`Voted for player ${p.id}`)}
                     >
                       Vote
@@ -235,10 +239,18 @@ function GameContent() {
             </div>
           </CardContent>
           <CardFooter className="border-t">
-            <Button variant="outline" onClick={() => router.push('/')} className="mr-2">
+            <Button 
+              variant="destructive" 
+              onClick={() => router.push('/')} 
+              className="mr-2"
+            >
               Leave Game
             </Button>
-            <Button variant="default" onClick={() => console.log('Next phase')}>
+            <Button 
+              variant="default"
+              className="bg-primary text-primary-foreground" 
+              onClick={() => console.log('Next phase')}
+            >
               Ready for Next Phase
             </Button>
           </CardFooter>

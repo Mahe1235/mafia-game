@@ -149,15 +149,16 @@ function JoinPageContent() {
             <div className="space-y-2 sm:space-y-3">
               <Button 
                 onClick={handleJoinGame} 
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium"
+                variant="default"
+                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={isJoining || !!error}
               >
                 {isJoining ? 'Joining...' : 'Join Game'}
               </Button>
               <Button 
                 onClick={() => router.push('/')} 
-                variant="outline" 
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium"
+                variant="secondary" 
+                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 disabled={isJoining}
               >
                 Back
