@@ -155,7 +155,7 @@ function GameContent() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Game Room</h1>
+            <h1 className="text-3xl font-bold text-primary">Game Room</h1>
             <p className="text-muted-foreground">Code: {code}</p>
           </div>
           <Badge variant={room.status === 'waiting' ? 'default' : room.status === 'started' ? 'outline' : 'destructive'} className="px-3 py-1 text-md">
@@ -179,7 +179,7 @@ function GameContent() {
             {player.role && player.role !== 'villager' && (
               <Button 
                 variant="secondary" 
-                className="mt-4 bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                className="mt-4 bg-slate-700 text-white hover:bg-slate-600"
                 onClick={() => console.log('Special role action')}
               >
                 Use Special Action
@@ -217,7 +217,7 @@ function GameContent() {
                     <Button 
                       variant="secondary" 
                       size="sm" 
-                      className="mt-2 w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      className="mt-2 w-full bg-slate-700 text-white hover:bg-slate-600"
                       onClick={() => console.log(`Voted for player ${p.id}`)}
                     >
                       Vote
@@ -241,14 +241,14 @@ function GameContent() {
           <CardFooter className="border-t">
             <Button 
               variant="destructive" 
+              className="mr-2 bg-red-600 text-white hover:bg-red-700"
               onClick={() => router.push('/')} 
-              className="mr-2"
             >
               Leave Game
             </Button>
             <Button 
               variant="default"
-              className="bg-primary text-primary-foreground" 
+              className="bg-blue-600 text-white hover:bg-blue-700" 
               onClick={() => console.log('Next phase')}
             >
               Ready for Next Phase

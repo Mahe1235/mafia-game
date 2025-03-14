@@ -51,7 +51,7 @@ export default function CreateGamePage() {
       size="compact"
     >
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-4xl font-bold text-foreground">
+        <h1 className="text-4xl font-bold text-primary">
           Create Game
         </h1>
         <p className="text-xl text-muted-foreground">
@@ -96,7 +96,7 @@ export default function CreateGamePage() {
             <div className="grid grid-cols-1 gap-3 pt-3">
               <Button 
                 variant="default"
-                className="w-full font-medium h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full font-medium h-12 bg-blue-600 text-white hover:bg-blue-700"
                 onClick={handleCreateGame}
                 disabled={isCreating}
               >
@@ -105,7 +105,7 @@ export default function CreateGamePage() {
               
               <Button 
                 variant="secondary"
-                className="w-full font-medium h-12 bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                className="w-full font-medium h-12 bg-slate-700 text-white hover:bg-slate-600"
                 onClick={() => router.push('/')}
                 disabled={isCreating}
               >

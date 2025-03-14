@@ -88,7 +88,7 @@ function JoinPageContent() {
   return (
     <Container>
       <div className="text-center space-y-2 sm:space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Join Game</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-primary">Join Game</h1>
         <p className="text-muted-foreground">Enter a room code to join</p>
       </div>
 
@@ -150,7 +150,7 @@ function JoinPageContent() {
               <Button 
                 onClick={handleJoinGame} 
                 variant="default"
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 text-white hover:bg-blue-700"
                 disabled={isJoining || !!error}
               >
                 {isJoining ? 'Joining...' : 'Join Game'}
@@ -158,7 +158,7 @@ function JoinPageContent() {
               <Button 
                 onClick={() => router.push('/')} 
                 variant="secondary" 
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-slate-700 text-white hover:bg-slate-600"
                 disabled={isJoining}
               >
                 Back
