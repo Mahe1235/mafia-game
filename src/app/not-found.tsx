@@ -1,6 +1,6 @@
 /**
- * Custom 404 page that's fully compatible with server rendering
- * This does not use any client-side React features
+ * Custom 404 page as a pure server component
+ * No client-side features can be used here
  */
 export default function NotFound() {
   return (
