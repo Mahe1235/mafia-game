@@ -103,9 +103,9 @@ function GamePageContent() {
 
   if (isLoading) {
     return (
-      <Container>
+      <Container variant="dark">
         <div className="flex items-center justify-center min-h-[200px]">
-          <div className="text-lg">Loading game...</div>
+          <div className="text-lg text-white">Loading game...</div>
         </div>
       </Container>
     );
@@ -113,9 +113,9 @@ function GamePageContent() {
 
   if (error || !room || !player) {
     return (
-      <Container>
+      <Container variant="dark">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600">
+          <h1 className="text-2xl font-bold text-red-400">
             {error || 'Game not found'}
           </h1>
           <Button onClick={() => router.push('/')} className="mt-4">
@@ -149,29 +149,29 @@ function GamePageContent() {
   };
 
   return (
-    <Container className="pb-8">
+    <Container variant="dark" className="pb-8 px-4 sm:px-6 md:px-8">
       <div className="text-center space-y-2 sm:space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white">
           {room.status === 'waiting' ? 'Waiting Room' : 'Game Room'}
         </h1>
-        <p className="text-gray-600">Room Code: {room.code}</p>
+        <p className="text-gray-300">Room Code: {room.code}</p>
       </div>
 
-      <Card className="shadow-lg mt-6">
+      <Card className="shadow-lg mt-6 bg-gray-900 border border-gray-700">
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
             {room.status === 'waiting' ? (
               <>
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Players</h2>
+                  <h2 className="text-xl font-semibold mb-2 text-white">Players</h2>
                   <div className="space-y-2">
                     {room.players.map(p => (
                       <div 
                         key={p.id} 
-                        className={`p-2 rounded-md flex items-center ${
+                        className={`p-3 rounded-md flex items-center ${
                           p.id === player.id 
-                            ? 'bg-blue-100 border border-blue-300' 
-                            : 'bg-gray-100'
+                            ? 'bg-gray-700 border border-blue-500' 
+                            : 'bg-gray-800'
                         }`}
                       >
                         <span className="text-xl mr-2">
@@ -180,13 +180,13 @@ function GamePageContent() {
                           {p.role === 'doctor' && '💉'}
                           {p.role === 'villager' && '🏘️'}
                         </span>
-                        <span className="font-medium">{p.name}</span> 
-                        {p.id === player.id && <span className="ml-1 text-blue-700 font-medium">(You)</span>}
+                        <span className="font-medium text-white">{p.name}</span> 
+                        {p.id === player.id && <span className="ml-1 text-blue-400 font-medium">(You)</span>}
                       </div>
                     ))}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 text-center font-medium mt-4">
+                <p className="text-sm text-gray-300 text-center font-medium mt-4">
                   Waiting for the host to start the game...
                 </p>
               </>
@@ -194,32 +194,32 @@ function GamePageContent() {
               <div className="space-y-4">
                 {room.status === 'started' && (
                   <div className="space-y-4">
-                    <div className={`text-center p-5 rounded-md ${player.role ? 'bg-gray-800' : 'bg-blue-100'}`}>
-                      <h2 className="text-lg font-semibold flex items-center justify-center gap-2">
+                    <div className="text-center p-5 rounded-md bg-black border border-gray-700">
+                      <h2 className="text-lg font-bold flex items-center justify-center gap-2 text-white">
                         <span className="text-2xl">
                           {player.role && RoleIcons[player.role]}
                         </span>
-                        <span className={`${player.role ? 'text-white' : 'text-blue-900'} font-bold`}>
+                        <span>
                           Your Role: {player.role ? RoleNames[player.role] : RoleNames.unassigned}
                         </span>
                       </h2>
-                      <p className={`${player.role ? 'text-gray-200' : 'text-blue-800'} mt-2 font-medium leading-relaxed`}>
+                      <p className="text-gray-300 mt-3 font-medium leading-relaxed">
                         {player.role ? RoleDescriptions[player.role] : RoleDescriptions.unassigned}
                       </p>
                     </div>
 
                     <div>
-                      <h2 className="text-xl font-semibold mb-2">Players</h2>
+                      <h2 className="text-xl font-semibold mb-2 text-white">Players</h2>
                       <div className="space-y-2">
                         {room.players.map(p => (
                           <div 
                             key={p.id} 
                             className={`p-3 rounded-md flex items-center ${
                               !p.isAlive 
-                                ? 'bg-red-100 text-red-900 line-through opacity-75' 
+                                ? 'bg-red-900 text-red-100 line-through opacity-75' 
                                 : p.id === player.id 
-                                  ? 'bg-blue-100 border border-blue-300' 
-                                  : 'bg-gray-100'
+                                  ? 'bg-gray-700 border border-blue-500' 
+                                  : 'bg-gray-800'
                             }`}
                           >
                             {p.id === player.id && p.role && (
@@ -227,9 +227,9 @@ function GamePageContent() {
                                 {RoleIcons[p.role]}
                               </span>
                             )}
-                            <span className="font-medium">{p.name}</span> 
-                            {p.id === player.id && <span className="ml-1 text-blue-700 font-medium">(You)</span>}
-                            {!p.isAlive && <span className="ml-1 text-red-700 font-medium">(Dead)</span>}
+                            <span className="font-medium text-white">{p.name}</span> 
+                            {p.id === player.id && <span className="ml-1 text-blue-400 font-medium">(You)</span>}
+                            {!p.isAlive && <span className="ml-1 text-red-300 font-medium">(Dead)</span>}
                           </div>
                         ))}
                       </div>
@@ -240,8 +240,8 @@ function GamePageContent() {
             )}
           </div>
         </CardContent>
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <p className="text-center text-sm font-medium text-gray-700 italic">
+        <div className="border-t border-gray-700 p-4 bg-gray-900 rounded-b-md">
+          <p className="text-center text-sm font-medium text-gray-400 italic">
             {getFooterText()}
           </p>
         </div>
@@ -252,7 +252,7 @@ function GamePageContent() {
 
 export default function GamePage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-800 flex items-center justify-center text-white">Loading...</div>}>
       <GamePageContent />
     </Suspense>
   );

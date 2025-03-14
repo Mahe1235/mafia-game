@@ -16,10 +16,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body suppressHydrationWarning>
+    <html lang="en" className="h-full">
+      <body suppressHydrationWarning className="h-full">
         <GraphQLProvider>
-          <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+          <main className="min-h-screen h-full bg-gray-800">
             {children}
             <ConnectionStatus />
           </main>

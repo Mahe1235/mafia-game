@@ -9,10 +9,10 @@ export const RoleIcons: Record<PlayerRole, string> = {
 };
 
 export const RoleColors: Record<PlayerRole, string> = {
-  mafia: 'text-red-600',
-  detective: 'text-blue-600',
-  doctor: 'text-green-600',
-  villager: 'text-gray-600',
+  mafia: 'text-red-400',
+  detective: 'text-blue-400',
+  doctor: 'text-green-400',
+  villager: 'text-gray-300',
   unassigned: 'text-gray-400'
 };
 

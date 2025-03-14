@@ -6,7 +6,7 @@ const containerVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-b from-gray-50 to-gray-100",
+        default: "bg-white",
         dark: "bg-gradient-mafia",
         light: "bg-background",
         transparent: "bg-transparent",
@@ -59,7 +59,7 @@ export function Container({
   ...props
 }: ContainerProps) {
   return (
-    <div className={`min-h-screen ${variant === 'transparent' ? '' : 'bg-gradient-to-b from-gray-50 to-gray-100'}`}>
+    <div className="min-h-screen w-full bg-gray-800">
       <div
         className={containerVariants({ variant, size, padding, animation, className })}
         {...props}
