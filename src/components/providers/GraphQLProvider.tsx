@@ -2,31 +2,57 @@
 
 /**
  * Apollo Client provider for the application
- * With safeguards for server-side rendering
+ * With safeguards for server-side rendering and error handling
  */
 import { useState, useEffect } from 'react';
-import { ApolloProvider } from '@apollo/client';
-import { client } from '@/lib/graphql';
+import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+
+// Error boundary component
+function ErrorFallback({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}
 
 interface GraphQLProviderProps {
   children: React.ReactNode;
 }
 
 export function GraphQLProvider({ children }: GraphQLProviderProps) {
-  // Track if we're mounted in the client
-  const [isMounted, setIsMounted] = useState(false);
+  // Track client initialization status
+  const [client, setClient] = useState<ApolloClient<any> | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   
+  // Initialize client on mount
   useEffect(() => {
-    setIsMounted(true);
+    try {
+      // Only create client on the client-side
+      const httpLink = createHttpLink({
+        uri: '/api/graphql',
+        credentials: 'same-origin'
+      });
+      
+      const apolloClient = new ApolloClient({
+        link: httpLink,
+        cache: new InMemoryCache(),
+        defaultOptions: {
+          watchQuery: {
+            fetchPolicy: 'network-only'
+          }
+        }
+      });
+      
+      setClient(apolloClient);
+    } catch (err) {
+      console.error('Failed to initialize Apollo client:', err);
+      setError(err as Error);
+    }
   }, []);
   
-  // If we haven't mounted yet, render children without the provider
-  // This runs during SSR and the first client render
-  if (!isMounted) {
-    return <>{children}</>;
+  // If there's an error or no client yet, render children without provider
+  if (error || !client) {
+    return <ErrorFallback>{children}</ErrorFallback>;
   }
   
-  // Once we're mounted in the client, use the Apollo provider
+  // Once client is initialized, use the Apollo provider
   return (
     <ApolloProvider client={client}>
       {children}

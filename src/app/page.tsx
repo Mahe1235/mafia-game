@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
+import Link from 'next/link';
 
 function HomePageContent() {
   const router = useRouter();
@@ -32,13 +33,9 @@ function HomePageContent() {
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-2 sm:space-y-3">
-            <Button 
-              onClick={() => router.push('/create')} 
-              className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 hover:bg-blue-700
-                       transition-colors"
-            >
+            <Link href="/create" className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-lg font-medium transition-colors inline-flex justify-center items-center">
               Create Game
-            </Button>
+            </Link>
             <Button 
               onClick={() => router.push('/join')} 
               variant="outline" 
