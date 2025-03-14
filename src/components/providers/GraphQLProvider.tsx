@@ -4,6 +4,7 @@
  * Apollo Client provider for the application
  * With safeguards for server-side rendering
  */
+import { useState, useEffect } from 'react';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '@/lib/graphql';
 
@@ -12,16 +13,20 @@ interface GraphQLProviderProps {
 }
 
 export function GraphQLProvider({ children }: GraphQLProviderProps) {
-  // Check if we're in a static generation or server rendering environment
-  const isServerRendering = typeof window === 'undefined';
+  // Track if we're mounted in the client
+  const [isMounted, setIsMounted] = useState(false);
   
-  // During static generation or server rendering, just return children
-  // to avoid useContext React hooks errors
-  if (isServerRendering) {
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  // If we haven't mounted yet, render children without the provider
+  // This runs during SSR and the first client render
+  if (!isMounted) {
     return <>{children}</>;
   }
   
-  // In client-side rendering, use the Apollo provider
+  // Once we're mounted in the client, use the Apollo provider
   return (
     <ApolloProvider client={client}>
       {children}
