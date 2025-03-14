@@ -1,11 +1,13 @@
 'use client';
 
+import React from 'react';
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Container } from '@/components/ui/container';
 import Link from 'next/link';
+import { Container } from '@/components/ui/container';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 function HomePageContent() {
   const router = useRouter();
@@ -24,54 +26,80 @@ function HomePageContent() {
   }, [searchParams]);
 
   return (
-    <Container 
-      variant="dark" 
-      size="compact" 
-      padding="md"
-      animation="fadeIn" 
-      className="flex flex-col justify-center items-center py-12"
-    >
-      <div className="text-center space-y-4 mb-8">
-        <h1 className="text-5xl font-bold text-white">
-          Mafia Game
-        </h1>
-        <p className="text-xl text-gray-300 font-medium">
-          Create or join a game to start playing
-        </p>
-      </div>
-
-      <Card 
-        className="w-full max-w-sm overflow-hidden bg-gray-800 border border-gray-700 shadow-xl"
-      >
-        <CardContent className="p-8 space-y-6">
-          <div className="grid grid-cols-1 gap-4">
-            <Link href="/create" className="w-full">
-              <Button 
-                variant="primary" 
-                size="lg" 
-                className="w-full font-semibold bg-red-600 hover:bg-red-700 text-white" 
-              >
-                Create Game
-              </Button>
-            </Link>
-            
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="w-full font-semibold border-gray-600 text-gray-300 hover:bg-gray-700" 
-              onClick={() => router.push('/join')}
-            >
-              Join Game
-            </Button>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <Container>
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center space-y-3">
+            <h1 className="text-4xl font-bold tracking-tight text-primary">Mafia Game</h1>
+            <p className="text-muted-foreground max-w-md">
+              A multiplayer social deduction game where players try to identify the Mafia among them.
+            </p>
           </div>
-        </CardContent>
-        <CardFooter className="bg-gray-900 p-4 border-t border-gray-700 justify-center">
-          <p className="text-sm text-gray-400 font-medium italic">
-            Night falls. The town sleeps. But some are still awake...
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/settings" aria-label="Settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </Link>
+          </Button>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create Game</CardTitle>
+              <CardDescription>
+                Start a new game and invite friends
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Create a custom game with your own settings. You'll be the host and can invite others to join.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild className="w-full">
+                <Link href="/create">Create Game</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Join Game</CardTitle>
+              <CardDescription>
+                Enter a game code to join
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Join an existing game using the game code provided by the host.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/join">Join Game</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+        
+        <Separator className="my-8" />
+        
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">How to Play</h2>
+          <p className="text-muted-foreground mb-6">
+            Mafia is a social deduction game where players are secretly assigned roles. 
+            The goal is for the innocent villagers to identify and eliminate the Mafia before 
+            they're outnumbered.
           </p>
-        </CardFooter>
-      </Card>
-    </Container>
+          <Button variant="secondary" asChild>
+            <Link href="/rules">Learn the Rules</Link>
+          </Button>
+        </div>
+      </Container>
+    </div>
   );
 }
 

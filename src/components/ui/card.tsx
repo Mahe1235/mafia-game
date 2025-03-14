@@ -1,111 +1,76 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
 
-const cardVariants = cva(
-  "rounded-lg border shadow-sm",
-  {
-    variants: {
-      variant: {
-        default: "border-border bg-card text-card-foreground",
-        primary: "border-primary/20 bg-card text-card-foreground",
-        secondary: "border-secondary/20 bg-card text-card-foreground",
-        ghost: "border-transparent bg-transparent",
-        dark: "border-gray-700 bg-gray-800 text-white",
-      },
-      hover: {
-        default: "",
-        lift: "transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1",
-        glow: "transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,0,0,0.1)]",
-      },
-      padding: {
-        default: "",
-        sm: "p-4",
-        md: "p-6",
-        lg: "p-8",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      hover: "default",
-      padding: "default",
-    },
-  }
-)
+import { cn } from "@/lib/utils"
 
-export interface CardProps 
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof cardVariants> {
-  className?: string;
-}
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-xl border bg-card text-card-foreground shadow",
+      className
+    )}
+    {...props}
+  />
+))
+Card.displayName = "Card"
 
-export function Card({ 
-  className, 
-  variant, 
-  hover, 
-  padding,
-  ...props 
-}: CardProps) {
-  return (
-    <div
-      className={cardVariants({ variant, hover, padding, className })}
-      {...props}
-    />
-  )
-}
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
 
-export function CardHeader({ 
-  className, 
-  ...props 
-}: CardProps) {
-  return (
-    <div
-      className={`flex flex-col space-y-1.5 p-6 ${className || ""}`}
-      {...props}
-    />
-  )
-}
+const CardTitle = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("font-semibold leading-none tracking-tight", className)}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
 
-export function CardTitle({ 
-  className, 
-  ...props 
-}: CardProps) {
-  return (
-    <h3
-      className={`text-2xl font-semibold leading-none tracking-tight ${className || ""}`}
-      {...props}
-    />
-  )
-}
+const CardDescription = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
 
-export function CardDescription({ 
-  className, 
-  ...props 
-}: CardProps) {
-  return (
-    <p
-      className={`text-sm text-foreground/60 ${className || ""}`}
-      {...props}
-    />
-  )
-}
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
 
-export function CardContent({ 
-  className, 
-  ...props 
-}: CardProps) {
-  return (
-    <div className={`p-6 pt-0 ${className || ""}`} {...props} />
-  )
-}
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
 
-export function CardFooter({ 
-  className, 
-  ...props 
-}: CardProps) {
-  return (
-    <div
-      className={`flex items-center p-6 pt-0 ${className || ""}`}
-      {...props}
-    />
-  )
-} 
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

@@ -1,66 +1,36 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-
-const containerVariants = cva(
-  "w-full mx-auto",
-  {
-    variants: {
-      variant: {
-        default: "bg-white",
-        dark: "bg-transparent",
-        light: "bg-background",
-        transparent: "bg-transparent",
-      },
-      size: {
-        default: "max-w-screen-md",
-        sm: "max-w-screen-sm",
-        md: "max-w-screen-md",
-        lg: "max-w-screen-lg",
-        xl: "max-w-screen-xl",
-        full: "max-w-full",
-        compact: "max-w-md",
-      },
-      padding: {
-        default: "px-4 sm:px-6 py-6 sm:py-8",
-        none: "p-0",
-        sm: "p-4",
-        md: "p-6",
-        lg: "p-8",
-        xl: "p-12",
-      },
-      animation: {
-        none: "",
-        fadeIn: "animate-fade-in-up",
-      }
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "compact",
-      padding: "default",
-      animation: "fadeIn",
-    },
-  }
-);
+import { cn } from "@/lib/utils";
 
 export interface ContainerProps 
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof containerVariants> {
+  extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
+  size?: "default" | "sm" | "md" | "lg" | "xl" | "full" | "compact";
   children: React.ReactNode;
 }
 
 export function Container({ 
   className,
-  variant,
-  size,
-  padding,
-  animation,
+  size = "compact",
   children,
   ...props
 }: ContainerProps) {
+  const sizeClasses = {
+    default: "max-w-screen-md",
+    sm: "max-w-screen-sm",
+    md: "max-w-screen-md",
+    lg: "max-w-screen-lg",
+    xl: "max-w-screen-xl",
+    full: "max-w-full",
+    compact: "max-w-md",
+  };
+
   return (
     <div
-      className={containerVariants({ variant, size, padding, animation, className })}
+      className={cn(
+        "w-full mx-auto px-4 sm:px-6 py-6 sm:py-8",
+        sizeClasses[size],
+        className
+      )}
       {...props}
     >
       <div className="space-y-6">

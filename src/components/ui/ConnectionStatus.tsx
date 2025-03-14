@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { pusherClient } from '@/lib/pusher';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type ConnectionState = 'connected' | 'connecting' | 'disconnected' | 'failed' | 'unavailable';
 
@@ -78,34 +81,48 @@ export function ConnectionStatus() {
     unavailable: 'Game server unavailable. Please try again later.'
   };
   
-  const statusColors: Record<ConnectionState, string> = {
-    connected: 'bg-green-100 text-green-800 border-green-300',
-    connecting: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    disconnected: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    failed: 'bg-red-100 text-red-800 border-red-300',
-    unavailable: 'bg-red-100 text-red-800 border-red-300'
+  const getBadgeVariant = (state: ConnectionState): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    switch (state) {
+      case 'connected':
+        return 'default';
+      case 'connecting':
+      case 'disconnected':
+        return 'secondary';
+      case 'failed':
+      case 'unavailable':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
   };
   
   // Safely render the status component
   try {
     return (
-      <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 p-3 rounded-md 
-                      shadow-md border ${statusColors[connectionState]} z-50 
-                      flex items-center space-x-2 text-sm animate-fade-in`}>
-        <div className={`w-2 h-2 rounded-full ${
-          connectionState === 'connected' ? 'bg-green-500' :
-          connectionState === 'connecting' ? 'bg-yellow-500' :
-          'bg-red-500'
-        }`} />
-        <span>{statusMessages[connectionState]}</span>
-        {connectionState === 'failed' && (
-          <button 
-            onClick={() => window.location.reload()}
-            className="ml-2 px-2 py-1 bg-red-200 hover:bg-red-300 rounded-md text-xs font-medium"
-          >
-            Refresh
-          </button>
-        )}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className={cn(
+          "flex items-center gap-2 rounded-lg border px-3 py-2 shadow-lg",
+          "bg-card text-card-foreground"
+        )}>
+          <div className={cn(
+            "h-2 w-2 rounded-full",
+            connectionState === 'connected' ? "bg-green-500" :
+            connectionState === 'connecting' ? "bg-yellow-500" :
+            "bg-red-500"
+          )} />
+          <Badge variant={getBadgeVariant(connectionState)}>
+            {statusMessages[connectionState]}
+          </Badge>
+          {connectionState === 'failed' && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
+              Refresh
+            </Button>
+          )}
+        </div>
       </div>
     );
   } catch (error) {

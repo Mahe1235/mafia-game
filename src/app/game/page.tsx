@@ -2,14 +2,16 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Container } from '@/components/ui/container';
 import { pusherClient } from '@/lib/pusher';
 import type { GameRoom, Player, PlayerSession } from '@/types/game';
 import { RoleDescriptions, RoleIcons, RoleNames, RoleColors } from '@/utils/roles';
 
-function GamePageContent() {
+function GameContent() {
   const [room, setRoom] = useState<GameRoom | null>(null);
   const [player, setPlayer] = useState<PlayerSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,111 +151,102 @@ function GamePageContent() {
   };
 
   return (
-    <Container variant="dark" className="pb-8 px-4 sm:px-6 md:px-8">
-      <div className="text-center space-y-2 sm:space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white">
-          {room.status === 'waiting' ? 'Waiting Room' : 'Game Room'}
-        </h1>
-        <p className="text-gray-300">Room Code: {room.code}</p>
-      </div>
-
-      <Card variant="dark" className="shadow-xl mt-6">
-        <CardContent className="p-4 sm:p-6">
-          <div className="space-y-4">
-            {room.status === 'waiting' ? (
-              <>
-                <div>
-                  <h2 className="text-xl font-semibold mb-2 text-white">Players</h2>
-                  <div className="space-y-2">
-                    {room.players.map(p => (
-                      <div 
-                        key={p.id} 
-                        className={`p-3 rounded-md flex items-center ${
-                          p.id === player.id 
-                            ? 'bg-gray-700 border border-blue-500' 
-                            : 'bg-gray-800'
-                        }`}
-                      >
-                        <span className="text-xl mr-2">
-                          {p.role === 'mafia' && '🔪'}
-                          {p.role === 'detective' && '🔍'}
-                          {p.role === 'doctor' && '💉'}
-                          {p.role === 'villager' && '🏘️'}
-                        </span>
-                        <span className="font-medium text-white">{p.name}</span> 
-                        {p.id === player.id && <span className="ml-1 text-blue-400 font-medium">(You)</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm text-gray-300 text-center font-medium mt-4">
-                  Waiting for the host to start the game...
-                </p>
-              </>
-            ) : (
-              <div className="space-y-4">
-                {room.status === 'started' && (
-                  <div className="space-y-4">
-                    <div className="text-center p-5 rounded-md bg-black border border-gray-700">
-                      <h2 className="text-lg font-bold flex items-center justify-center gap-2 text-white">
-                        <span className="text-2xl">
-                          {player.role && RoleIcons[player.role]}
-                        </span>
-                        <span>
-                          Your Role: {player.role ? RoleNames[player.role] : RoleNames.unassigned}
-                        </span>
-                      </h2>
-                      <p className="text-gray-300 mt-3 font-medium leading-relaxed">
-                        {player.role ? RoleDescriptions[player.role] : RoleDescriptions.unassigned}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h2 className="text-xl font-semibold mb-2 text-white">Players</h2>
-                      <div className="space-y-2">
-                        {room.players.map(p => (
-                          <div 
-                            key={p.id} 
-                            className={`p-3 rounded-md flex items-center ${
-                              !p.isAlive 
-                                ? 'bg-red-900 text-red-100 line-through opacity-75' 
-                                : p.id === player.id 
-                                  ? 'bg-gray-700 border border-blue-500' 
-                                  : 'bg-gray-900'
-                            }`}
-                          >
-                            {p.id === player.id && p.role && (
-                              <span className={`text-xl mr-2 ${p.role && RoleColors[p.role]}`}>
-                                {RoleIcons[p.role]}
-                              </span>
-                            )}
-                            <span className="font-medium text-white">{p.name}</span> 
-                            {p.id === player.id && <span className="ml-1 text-blue-400 font-medium">(You)</span>}
-                            {!p.isAlive && <span className="ml-1 text-red-300 font-medium">(Dead)</span>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+    <Container className="py-6">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-primary">Game Room</h1>
+            <p className="text-muted-foreground">Code: {code}</p>
           </div>
-        </CardContent>
-        <div className="border-t border-gray-700 p-4 bg-gray-900 rounded-b-md">
-          <p className="text-center text-sm font-medium text-gray-400 italic">
-            {getFooterText()}
-          </p>
+          <Badge variant={room.status === 'waiting' ? 'default' : room.status === 'started' ? 'outline' : 'destructive'} className="px-3 py-1 text-md">
+            {room.status === 'waiting' ? 'Waiting Room' : room.status === 'started' ? 'Game Started' : 'Game Ended'}
+          </Badge>
         </div>
-      </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Role: {player.role ? RoleNames[player.role] : RoleNames.unassigned}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              {player.role ? RoleDescriptions[player.role] : RoleDescriptions.unassigned}
+            </p>
+            {player.role && player.role !== 'villager' && (
+              <Button onClick={() => console.log('Special role action')} className="mt-4">
+                Use Special Action
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Players</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {room.players.map((p) => (
+                <div 
+                  key={p.id} 
+                  className={`p-4 rounded-lg border ${
+                    !p.isAlive 
+                      ? 'border-muted bg-muted/40' 
+                      : p.id === player.id 
+                        ? 'border-border bg-card' 
+                        : 'border-muted bg-muted/40'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className={!p.isAlive ? 'line-through text-muted-foreground' : ''}>
+                      {p.name}
+                    </span>
+                    <Badge variant={p.isAlive ? 'outline' : 'secondary'}>
+                      {p.isAlive ? 'Alive' : 'Dead'}
+                    </Badge>
+                  </div>
+                  {room.status === 'started' && p.isAlive && p.id === player.id && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="mt-2 w-full"
+                      onClick={() => console.log(`Voted for player ${p.id}`)}
+                    >
+                      Vote
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Game Log</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[200px] overflow-y-auto">
+            <div className="space-y-2">
+              <p className="text-sm">{getFooterText()}</p>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t">
+            <Button variant="outline" onClick={() => router.push('/')} className="mr-2">
+              Leave Game
+            </Button>
+            <Button variant="default" onClick={() => console.log('Next phase')}>
+              Ready for Next Phase
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </Container>
   );
 }
 
 export default function GamePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center text-white">Loading...</div>}>
-      <GamePageContent />
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background">Loading game...</div>}>
+      <GameContent />
     </Suspense>
   );
 } 
