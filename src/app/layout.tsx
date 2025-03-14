@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <body suppressHydrationWarning className="h-full">
         <GraphQLProvider>
-          <main className="min-h-screen h-full bg-gray-800">
+          <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
             {children}
             <ConnectionStatus />
           </main>

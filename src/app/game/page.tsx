@@ -157,7 +157,7 @@ function GamePageContent() {
         <p className="text-gray-300">Room Code: {room.code}</p>
       </div>
 
-      <Card className="shadow-lg mt-6 bg-gray-900 border border-gray-700">
+      <Card variant="dark" className="shadow-xl mt-6">
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
             {room.status === 'waiting' ? (
@@ -219,7 +219,7 @@ function GamePageContent() {
                                 ? 'bg-red-900 text-red-100 line-through opacity-75' 
                                 : p.id === player.id 
                                   ? 'bg-gray-700 border border-blue-500' 
-                                  : 'bg-gray-800'
+                                  : 'bg-gray-900'
                             }`}
                           >
                             {p.id === player.id && p.role && (
@@ -252,7 +252,7 @@ function GamePageContent() {
 
 export default function GamePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-800 flex items-center justify-center text-white">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center text-white">Loading...</div>}>
       <GamePageContent />
     </Suspense>
   );

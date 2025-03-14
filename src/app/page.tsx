@@ -12,7 +12,7 @@ function HomePageContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const error = searchParams.get('error');
+    const error = searchParams?.get('error');
     if (error) {
       const errorMessages = {
         'host-left': 'The host has ended the game.',
@@ -29,21 +29,19 @@ function HomePageContent() {
       size="compact" 
       padding="md"
       animation="fadeIn" 
-      className="flex flex-col justify-center items-center"
+      className="flex flex-col justify-center items-center py-12"
     >
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+        <h1 className="text-5xl font-bold text-white">
           Mafia Game
         </h1>
-        <p className="text-xl text-foreground/80">
+        <p className="text-xl text-gray-300 font-medium">
           Create or join a game to start playing
         </p>
       </div>
 
       <Card 
-        variant="default" 
-        hover="lift" 
-        className="w-full max-w-sm border-border/50 overflow-hidden"
+        className="w-full max-w-sm overflow-hidden bg-gray-800 border border-gray-700 shadow-xl"
       >
         <CardContent className="p-8 space-y-6">
           <div className="grid grid-cols-1 gap-4">
@@ -51,7 +49,7 @@ function HomePageContent() {
               <Button 
                 variant="primary" 
                 size="lg" 
-                className="w-full font-semibold" 
+                className="w-full font-semibold bg-red-600 hover:bg-red-700 text-white" 
               >
                 Create Game
               </Button>
@@ -60,15 +58,15 @@ function HomePageContent() {
             <Button 
               variant="outline" 
               size="lg" 
-              className="w-full font-semibold" 
+              className="w-full font-semibold border-gray-600 text-gray-300 hover:bg-gray-700" 
               onClick={() => router.push('/join')}
             >
               Join Game
             </Button>
           </div>
         </CardContent>
-        <CardFooter className="bg-background/50 p-4 border-t border-border/50 justify-center">
-          <p className="text-sm text-foreground/70">
+        <CardFooter className="bg-gray-900 p-4 border-t border-gray-700 justify-center">
+          <p className="text-sm text-gray-400 font-medium italic">
             Night falls. The town sleeps. But some are still awake...
           </p>
         </CardFooter>
@@ -80,8 +78,8 @@ function HomePageContent() {
 export default function HomePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg animate-pulse">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
+        <div className="text-lg text-white animate-pulse">Loading...</div>
       </div>
     }>
       <HomePageContent />

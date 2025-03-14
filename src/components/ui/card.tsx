@@ -2,14 +2,15 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 const cardVariants = cva(
-  "rounded-lg border bg-card text-card-foreground shadow-sm",
+  "rounded-lg border shadow-sm",
   {
     variants: {
       variant: {
-        default: "border-border",
-        primary: "border-primary/20",
-        secondary: "border-secondary/20",
+        default: "border-border bg-card text-card-foreground",
+        primary: "border-primary/20 bg-card text-card-foreground",
+        secondary: "border-secondary/20 bg-card text-card-foreground",
         ghost: "border-transparent bg-transparent",
+        dark: "border-gray-700 bg-gray-800 text-white",
       },
       hover: {
         default: "",
@@ -58,7 +59,7 @@ export function CardHeader({
 }: CardProps) {
   return (
     <div
-      className={`flex flex-col space-y-1.5 p-6 ${className}`}
+      className={`flex flex-col space-y-1.5 p-6 ${className || ""}`}
       {...props}
     />
   )
@@ -70,7 +71,7 @@ export function CardTitle({
 }: CardProps) {
   return (
     <h3
-      className={`text-2xl font-semibold leading-none tracking-tight ${className}`}
+      className={`text-2xl font-semibold leading-none tracking-tight ${className || ""}`}
       {...props}
     />
   )
@@ -82,7 +83,7 @@ export function CardDescription({
 }: CardProps) {
   return (
     <p
-      className={`text-sm text-foreground/60 ${className}`}
+      className={`text-sm text-foreground/60 ${className || ""}`}
       {...props}
     />
   )
@@ -93,7 +94,7 @@ export function CardContent({
   ...props 
 }: CardProps) {
   return (
-    <div className={`p-6 pt-0 ${className}`} {...props} />
+    <div className={`p-6 pt-0 ${className || ""}`} {...props} />
   )
 }
 
@@ -103,7 +104,7 @@ export function CardFooter({
 }: CardProps) {
   return (
     <div
-      className={`flex items-center p-6 pt-0 ${className}`}
+      className={`flex items-center p-6 pt-0 ${className || ""}`}
       {...props}
     />
   )
