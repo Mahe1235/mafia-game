@@ -78,4 +78,4 @@ const createSafeLogger = () => {
   }
 };
 
-export const logger = createSafeLogger(); 
+export const logger = createSafeLogger();
