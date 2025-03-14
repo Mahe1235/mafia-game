@@ -67,4 +67,4 @@ mockIntersectionObserver.mockReturnValue({
   unobserve: () => null,
   disconnect: () => null
 });
-window.IntersectionObserver = mockIntersectionObserver; 
+window.IntersectionObserver = mockIntersectionObserver;
