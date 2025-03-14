@@ -105,9 +105,9 @@ function GameContent() {
 
   if (isLoading) {
     return (
-      <Container variant="dark">
+      <Container className="bg-background">
         <div className="flex items-center justify-center min-h-[200px]">
-          <div className="text-lg text-white">Loading game...</div>
+          <div className="text-lg text-foreground">Loading game...</div>
         </div>
       </Container>
     );
@@ -115,9 +115,9 @@ function GameContent() {
 
   if (error || !room || !player) {
     return (
-      <Container variant="dark">
+      <Container className="bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-400">
+          <h1 className="text-2xl font-bold text-destructive">
             {error || 'Game not found'}
           </h1>
           <Button onClick={() => router.push('/')} className="mt-4">
@@ -155,7 +155,7 @@ function GameContent() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-primary">Game Room</h1>
+            <h1 className="text-3xl font-bold text-foreground">Game Room</h1>
             <p className="text-muted-foreground">Code: {code}</p>
           </div>
           <Badge variant={room.status === 'waiting' ? 'default' : room.status === 'started' ? 'outline' : 'destructive'} className="px-3 py-1 text-md">
@@ -165,10 +165,15 @@ function GameContent() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Your Role: {player.role ? RoleNames[player.role] : RoleNames.unassigned}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span>Your Role: {player.role ? RoleNames[player.role] : RoleNames.unassigned}</span>
+              {player.role && (
+                <span className={RoleColors[player.role]}>{RoleIcons[player.role]}</span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
+            <p className="text-card-foreground">
               {player.role ? RoleDescriptions[player.role] : RoleDescriptions.unassigned}
             </p>
             {player.role && player.role !== 'villager' && (
@@ -192,12 +197,12 @@ function GameContent() {
                     !p.isAlive 
                       ? 'border-muted bg-muted/40' 
                       : p.id === player.id 
-                        ? 'border-border bg-card' 
+                        ? 'border-primary/30 bg-card' 
                         : 'border-muted bg-muted/40'
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className={!p.isAlive ? 'line-through text-muted-foreground' : ''}>
+                    <span className={!p.isAlive ? 'line-through text-muted-foreground' : 'text-card-foreground'}>
                       {p.name}
                     </span>
                     <Badge variant={p.isAlive ? 'outline' : 'secondary'}>
@@ -226,7 +231,7 @@ function GameContent() {
           </CardHeader>
           <CardContent className="max-h-[200px] overflow-y-auto">
             <div className="space-y-2">
-              <p className="text-sm">{getFooterText()}</p>
+              <p className="text-sm text-card-foreground">{getFooterText()}</p>
             </div>
           </CardContent>
           <CardFooter className="border-t">

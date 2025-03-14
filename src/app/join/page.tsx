@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import type { PlayerSession } from '@/types/game';
@@ -88,21 +88,24 @@ function JoinPageContent() {
   return (
     <Container>
       <div className="text-center space-y-2 sm:space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Join Game</h1>
-        <p className="text-gray-600">Enter a room code to join</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Join Game</h1>
+        <p className="text-muted-foreground">Enter a room code to join</p>
       </div>
 
-      <Card className="shadow-lg">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-center">Enter Game Details</CardTitle>
+        </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <div className="space-y-4 sm:space-y-6">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="roomCode" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="roomCode" className="block text-sm font-medium text-foreground mb-1">
                 Room Code
               </label>
               <input
@@ -116,9 +119,9 @@ function JoinPageContent() {
                     validateRoom(code);
                   }
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                         uppercase"
+                className="w-full px-3 py-2 border border-input rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50
+                         bg-background text-foreground uppercase"
                 placeholder="Enter room code"
                 maxLength={6}
                 disabled={isJoining}
@@ -126,7 +129,7 @@ function JoinPageContent() {
             </div>
 
             <div>
-              <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="playerName" className="block text-sm font-medium text-foreground mb-1">
                 Your Name
               </label>
               <input
@@ -134,8 +137,9 @@ function JoinPageContent() {
                 id="playerName"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-input rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50
+                         bg-background text-foreground"
                 placeholder="Enter your name"
                 maxLength={20}
                 disabled={isJoining}
@@ -145,8 +149,7 @@ function JoinPageContent() {
             <div className="space-y-2 sm:space-y-3">
               <Button 
                 onClick={handleJoinGame} 
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium bg-blue-600 hover:bg-blue-700
-                         transition-colors"
+                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium"
                 disabled={isJoining || !!error}
               >
                 {isJoining ? 'Joining...' : 'Join Game'}
@@ -154,7 +157,7 @@ function JoinPageContent() {
               <Button 
                 onClick={() => router.push('/')} 
                 variant="outline" 
-                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium border-2"
+                className="w-full h-10 sm:h-12 text-base sm:text-lg font-medium"
                 disabled={isJoining}
               >
                 Back
@@ -169,7 +172,7 @@ function JoinPageContent() {
 
 export default function JoinPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="text-foreground">Loading...</div></div>}>
       <JoinPageContent />
     </Suspense>
   );

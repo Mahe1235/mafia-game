@@ -47,32 +47,26 @@ export default function CreateGamePage() {
 
   return (
     <Container 
-      variant="dark" 
-      size="compact" 
-      padding="md"
-      animation="fadeIn"
+      className="bg-background py-8"
+      size="compact"
     >
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+        <h1 className="text-4xl font-bold text-foreground">
           Create Game
         </h1>
-        <p className="text-xl text-foreground/80">
+        <p className="text-xl text-muted-foreground">
           Host a new game of Mafia
         </p>
       </div>
 
-      <Card 
-        variant="default" 
-        hover="lift" 
-        className="w-full border-border/50 overflow-hidden"
-      >
+      <Card className="border-border/50 overflow-hidden">
         <CardHeader>
           <CardTitle className="text-center text-2xl">Game Setup</CardTitle>
         </CardHeader>
         
         <CardContent className="p-6 space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm font-medium">
+            <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm font-medium">
               {error}
             </div>
           )}
@@ -81,7 +75,7 @@ export default function CreateGamePage() {
             <div>
               <label 
                 htmlFor="hostName" 
-                className="block text-sm font-medium mb-1.5"
+                className="block text-sm font-medium text-foreground mb-1.5"
               >
                 Your Name
               </label>
@@ -90,9 +84,9 @@ export default function CreateGamePage() {
                 id="hostName"
                 value={hostName}
                 onChange={(e) => setHostName(e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-md shadow-sm
+                className="w-full px-4 py-3 border border-input rounded-md shadow-sm
                        focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50
-                       bg-card transition-colors"
+                       bg-background text-foreground transition-colors"
                 placeholder="Enter your name"
                 maxLength={20}
                 disabled={isCreating}
@@ -101,11 +95,8 @@ export default function CreateGamePage() {
 
             <div className="grid grid-cols-1 gap-3 pt-3">
               <Button 
-                variant="primary"
-                size="lg"
-                className="w-full font-medium"
+                className="w-full font-medium h-12"
                 onClick={handleCreateGame}
-                isLoading={isCreating}
                 disabled={isCreating}
               >
                 {isCreating ? 'Creating...' : 'Create Room'}
@@ -113,8 +104,7 @@ export default function CreateGamePage() {
               
               <Button 
                 variant="outline"
-                size="lg"
-                className="w-full font-medium"
+                className="w-full font-medium h-12"
                 onClick={() => router.push('/')}
                 disabled={isCreating}
               >
@@ -124,8 +114,8 @@ export default function CreateGamePage() {
           </div>
         </CardContent>
         
-        <CardFooter className="bg-background/50 p-4 border-t border-border/50 justify-center">
-          <p className="text-sm text-foreground/70 text-center">
+        <CardFooter className="bg-muted/50 p-4 border-t border-border/50 justify-center">
+          <p className="text-sm text-muted-foreground text-center">
             You'll receive a room code to share with friends
           </p>
         </CardFooter>
