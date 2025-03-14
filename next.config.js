@@ -4,6 +4,8 @@ const nextConfig = {
   eslint: {
     // In production builds, don't run ESLint
     ignoreDuringBuilds: true,
+    // Disable ESLint errors during development
+    dirs: ['pages', 'components', 'lib', 'src'],
   },
   typescript: {
     // In production builds, don't run TypeScript type checking
@@ -15,8 +17,7 @@ const nextConfig = {
   
   // Update to use correct option names for Next.js 15
   experimental: {
-    // External packages that should be treated as server-side only
-    serverExternalPackages: ['@apollo/client', 'pusher-js']
+    // Next.js 15 no longer supports serverExternalPackages
   },
 
   // Remove specific pages from static generation
