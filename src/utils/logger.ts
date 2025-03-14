@@ -1,5 +1,6 @@
 /**
  * Logger utility for consistent logging across the application
+ * Safe for both client and server environments
  */
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
@@ -16,8 +17,31 @@ class Logger {
   }
 
   private log(level: LogLevel, message: string, ...args: any[]): void {
-    const timestamp = new Date().toISOString();
-    console[level](`[${timestamp}] [${level.toUpperCase()}]:`, message, ...args);
+    // Check if console is available (it should be, but defensive programming)
+    if (typeof console === 'undefined') return;
+    
+    try {
+      const timestamp = new Date().toISOString();
+      const formattedArgs = args.map(arg => {
+        if (arg instanceof Error) {
+          return { 
+            message: arg.message, 
+            stack: arg.stack,
+            name: arg.name
+          };
+        }
+        return arg;
+      });
+      
+      console[level](`[${timestamp}] [${level.toUpperCase()}]:`, message, ...formattedArgs);
+    } catch (error) {
+      // Last resort fallback
+      try {
+        console.error('Logger error:', error);
+      } catch {
+        // Cannot do anything else if console is completely broken
+      }
+    }
   }
 
   info(message: string, ...args: any[]): void {
@@ -33,10 +57,25 @@ class Logger {
   }
 
   debug(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV !== 'production') {
+    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
       this.log('debug', message, ...args);
     }
   }
 }
 
-export const logger = Logger.getInstance(); 
+// Create a safe logger that won't crash in any environment
+const createSafeLogger = () => {
+  try {
+    return Logger.getInstance();
+  } catch (error) {
+    // Fallback logger if singleton instantiation fails
+    return {
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      debug: () => {}
+    };
+  }
+};
+
+export const logger = createSafeLogger(); 
